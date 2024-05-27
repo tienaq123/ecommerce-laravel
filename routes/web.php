@@ -14,9 +14,20 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('index');
 });
 
 Route::get('/dashboard', function () {
     return ('Dash Board');
+})->name('hello');
+
+Route::get('/categories', function () {
+    $data = [
+        'message' => 'Xin chào từ JSON!',
+        'timestamp' => now()
+    ];
+
+    // Trả về dữ liệu dưới dạng JSON
+    return response()->json($data);
 });
+
