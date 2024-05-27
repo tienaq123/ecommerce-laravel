@@ -17,3 +17,12 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+// Route::get('/categories', function () {
+//     $data = [
+//         'message' => 'Xin chào từ JSON!',
+//         'timestamp' => now()
+//     ];
+
+//     // Trả về dữ liệu dưới dạng JSON
+//     return response()->json($data);
+// }); 

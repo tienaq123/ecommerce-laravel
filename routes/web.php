@@ -21,13 +21,12 @@ Route::get('/dashboard', function () {
     return ('Dash Board');
 })->name('hello');
 
-Route::get('/categories', function () {
+Route::get('/api/categories', function () {
     $data = [
-        'message' => 'Xin chào từ JSON!',
+        'title' => 'Categories',
         'timestamp' => now()
     ];
 
     // Trả về dữ liệu dưới dạng JSON
     return response()->json($data);
-});
-
+}); 
