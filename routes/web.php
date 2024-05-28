@@ -21,9 +21,9 @@ Route::get('/dashboard', function () {
     return ('Dash Board');
 })->name('hello');
 
-Route::get('/api/categories', function () {
+Route::get('/api/test', function () {
     $data = [
-        'title' => 'Categories',
+        'title' => 'Test',
         'timestamp' => now()
     ];
 
