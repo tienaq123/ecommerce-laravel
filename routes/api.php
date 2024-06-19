@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\BannerController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +18,10 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::resource('banners', BannerController::class);
+
+
 // Route::get('/categories', function () {
 //     $data = [
 //         'message' => 'Xin chào từ JSON!',
@@ -25,4 +30,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 //     // Trả về dữ liệu dưới dạng JSON
 //     return response()->json($data);
-// }); 
+// });
