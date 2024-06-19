@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
             $table->string('image_url');
             $table->boolean('is_thumbnail')->default(false);
+            $table->softDeletes();
             $table->timestamps();
         });
     }

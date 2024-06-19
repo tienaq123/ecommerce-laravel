@@ -23,6 +23,7 @@ return new class extends Migration
             $table->unsignedBigInteger('brand_id');
             $table->string('promotion')->nullable();
             $table->string('status')->default('Active');
+            $table->softDeletes();
             $table->timestamps();
 
             $table->foreign('category_id')->references('id')->on('categories');

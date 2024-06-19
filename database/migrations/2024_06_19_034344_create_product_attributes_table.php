@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('attribute_id')->constrained('attributes');
             $table->foreignId('value_id')->constrained('attribute_values');
             $table->decimal('additional_price', 10, 2)->nullable();
+            $table->softDeletes();
         });
     }
 

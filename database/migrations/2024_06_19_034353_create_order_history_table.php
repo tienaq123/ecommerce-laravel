@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreign('order_id')->references('id')->on('orders');
             $table->unsignedBigInteger('status_id');
             $table->foreign('status_id')->references('id')->on('order_status');
+            $table->softDeletes();
             $table->timestamps();
         });
 

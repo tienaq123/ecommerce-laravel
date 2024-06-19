@@ -24,6 +24,7 @@ return new class extends Migration
             $table->integer('points')->default(0);
             $table->rememberToken();
             $table->string('status')->default('Active');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

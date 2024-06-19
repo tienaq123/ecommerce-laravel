@@ -18,6 +18,7 @@ return new class extends Migration
             $table->decimal('total_amount', 10, 2);
             $table->unsignedBigInteger('status_id');
             $table->foreign('status_id')->references('id')->on('order_status');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('point_id')->constrained('points');
             $table->integer('point_use');
             $table->foreignId('order_id')->constrained('orders');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

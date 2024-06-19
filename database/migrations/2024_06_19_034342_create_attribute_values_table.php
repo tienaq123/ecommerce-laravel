@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('attribute_id');
             $table->foreign('attribute_id')->references('id')->on('attributes');
             $table->string('value');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

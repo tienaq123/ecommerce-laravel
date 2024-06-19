@@ -17,6 +17,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->decimal('cost', 10, 2);
             $table->string('status')->default('Active');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

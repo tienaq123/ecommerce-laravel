@@ -17,6 +17,7 @@ return new class extends Migration
             $table->decimal('discount', 5, 2);
             $table->date('expiration_date');
             $table->string('status')->default('Active');
+            $table->softDeletes();
             $table->timestamps();
         });
     }
