@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BannerController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -17,16 +18,18 @@ Route::get('/', function () {
     return view('index');
 });
 
-Route::get('/dashboard', function () {
-    return ('Dash Board');
-})->name('hello');
+Route::resource('banners', BannerController::class);
 
-Route::get('/api/test', function () {
-    $data = [
-        'title' => 'Test',
-        'timestamp' => now()
-    ];
+// Route::get('/dashboard', function () {
+//     return ('Dash Board');
+// })->name('hello');
 
-    // Trả về dữ liệu dưới dạng JSON
-    return response()->json($data);
-}); 
+// Route::get('/api/test', function () {
+//     $data = [
+//         'title' => 'Test',
+//         'timestamp' => now()
+//     ];
+
+//     // Trả về dữ liệu dưới dạng JSON
+//     return response()->json($data);
+// });
