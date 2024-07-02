@@ -99,4 +99,23 @@ class BannerController extends Controller
             'data' => new BannerResources($banner)
         ], 200);
     }
+
+
+    public function destroy(string $id)
+    {
+        $banner = Banner::where('id', $id)->first();
+        if (!$banner) {
+            return response()->json([
+                'status' => false,
+                'msg' => 'Not exist',
+                'data' => []
+            ]);
+        }
+        $banner->delete();
+        return response()->json([
+            'status' => true,
+            'msg' => 'Success delete',
+            'data' => new BannerResources($banner)
+        ]);
+    }
 }
