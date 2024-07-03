@@ -20,6 +20,6 @@ class DatabaseSeeder extends Seeder
         //     'name' => 'Test User',
         //     'email' => 'test@example.com',
         // ]);
-        // Banner::factory()->count(10)->create();
+        // Banner::factory()->count(30)->create();
     }
 }

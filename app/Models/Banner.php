@@ -13,5 +13,5 @@ class Banner extends Model
     use SoftDeletes;
     use Sortable;
 
-    protected $fillable = ['title', 'image_url', 'link'];
+    protected $fillable = ['title', 'image_url', 'link', 'description', 'active'];
 }
