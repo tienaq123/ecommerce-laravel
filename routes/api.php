@@ -15,6 +15,7 @@ Route::apiResource('banners', BannerController::class);
 Route::apiResource('categories', CategoryController::class);
 
 Route::post('/categories/restore/{id}', [CategoryController::class, 'restore']);
+// Route::post('/categories/restore/{id}', [CategoryController::class, 'restore']);
 
 // Route::get('/categories', function () {
 //     $data = [
