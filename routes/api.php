@@ -13,6 +13,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::apiResource('banners', BannerController::class);
 Route::apiResource('categories', CategoryController::class);
+Route::apiResource('products', CategoryController::class);
 
 
 // Route::get('/categories', function () {
