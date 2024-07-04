@@ -3,119 +3,75 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\BannerRequest;
 use App\Http\Resources\BannerResources;
 use App\Models\Banner;
+use App\Repositories\Banner\BannerInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator as FacadesValidator;
 
 class BannerController extends Controller
 {
-    public function index()
+
+    private BannerInterface $banner;
+
+    public function __construct(BannerInterface $banner)
     {
-        $banners = Banner::all();
-        return response()->json([
-            'status' => true,
-            'message' => 'Success banners',
-            'data' => BannerResources::collection($banners)
-        ], 200);
+        $this->banner = $banner;
+    }
+
+    public function index(Request $request)
+    {
+        $data = $this->banner->get($request);
+        if ($data) {
+            return BannerResources::collection($data);
+        }
+        return response()->apiJsonResponse([
+            'data' => []
+        ]);
     }
 
     public function show($id)
     {
-        $banner = Banner::find($id);
+
+        $banner = $this->banner->getById($id);
         if (!$banner) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Banner does not exist',
-                'data' => []
-            ], 404);
+            return response()->json(['message' => 'Banner not found'], 404);
         }
-        return response()->json([
-            'status' => true,
-            'message' => 'Success',
-            'data' => new BannerResources($banner)
-        ], 200);
+        return BannerResources::make($banner);
     }
 
-    public function store(Request $request)
+    public function store(BannerRequest $request)
     {
-        $validation = FacadesValidator::make(
-            $request->all(),
-            [
-                'title' => ['required', 'min:2', 'max:100'],
-                'image_url' => ['required'],
-                'link' => ['required'],
-            ]
-        );
-
-        if ($validation->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Error',
-                'data' => $validation->errors()
-            ], 422);
-        }
-
-        $data = $request->all();
-        $banner = Banner::create($data);
-        return response()->json([
-            'status' => true,
-            'message' => 'Success',
-            'data' => new BannerResources($banner)
-        ], 200);
+        $banner = $this->banner->store($request);
+        return response()->json($banner, 201);
     }
-    public function update(Request $request, $id)
+
+    public function update(BannerRequest $request, $id)
     {
-        $banner = Banner::find($id);
+        $banner = $this->banner->update($request, $id);
         if (!$banner) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Không tồn tại',
-                'data' => []
-            ], 404);
+            return response()->json(['message' => 'Banner not found'], 404);
         }
-        $validation = FacadesValidator::make(
-            $request->all(),
-            [
-                'title' => ['required', 'min:2', 'max:100'],
-                'image_url' => ['required'],
-                'link' => ['required'],
-            ]
-        );
-
-        if ($validation->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Error',
-                'data' => $validation->errors()
-            ], 422);
-        }
-
-        $data = $request->all();
-        $banner->update($data);
-        return response()->json([
-            'status' => true,
-            'message' => 'Success',
-            'data' => new BannerResources($banner)
-        ], 200);
+        return response()->json($banner);
     }
 
 
     public function destroy(string $id)
     {
-        $banner = Banner::where('id', $id)->first();
-        if (!$banner) {
-            return response()->json([
-                'status' => false,
-                'msg' => 'Not exist',
-                'data' => []
-            ]);
+        $deleted = $this->banner->destroy($id);
+        if (!$deleted) {
+            return response()->json(['message' => 'Banner not found'], 404);
         }
-        $banner->delete();
-        return response()->json([
-            'status' => true,
-            'msg' => 'Success delete',
-            'data' => new BannerResources($banner)
-        ]);
+        return response()->json(['message' => 'Banner deleted successfully']);
+    }
+
+    public function toggleStatus(string $id)
+    {
+        $banner = $this->banner->toggle($id);
+        if (!$banner) {
+            return response()->json(['message' => 'Banner not found'], 404);
+        }
+        return response()->json($banner);
     }
 }
