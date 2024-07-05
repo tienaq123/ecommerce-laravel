@@ -30,7 +30,7 @@ class BannerRequest extends FormRequest
             'description' => ['nullable'],
             'active' => [
                 'required',
-                Rule::in([StatusEnum::ACTIVE, StatusEnum::UN_ACTIVE]),
+                Rule::in([StatusEnum::ACTIVE, StatusEnum::UNACTIVE]),
             ],
         ];
     }

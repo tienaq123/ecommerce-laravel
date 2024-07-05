@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\ProductController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -13,14 +14,14 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::apiResource('banners', BannerController::class);
-Route::apiResource('categories', CategoryController::class);
-// Route::apiResource('products', CategoryController::class);
-
-Route::post('/categories/restore/{id}', [CategoryController::class, 'restore']);
 Route::put('/banners/toggle/{id}', [BannerController::class, 'toggleStatus']);
+//
+Route::apiResource('categories', CategoryController::class);
+Route::post('/categories/restore/{id}', [CategoryController::class, 'restore']);
+//
+Route::apiResource('products', ProductController::class);
+Route::post('/product/restore/{id}', [ProductController::class, 'restore']);
 
-
-// Route::post('/categories/restore/{id}', [CategoryController::class, 'restore']);
 
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
