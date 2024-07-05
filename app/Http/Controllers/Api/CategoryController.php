@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator as FacadesValidator;
 
 class CategoryController extends Controller
 {
@@ -23,35 +24,33 @@ class CategoryController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-        //
-    }
+        $validation = FacadesValidator::make(
+            $request->all(),
+            [
+                'name' => ['required', 'unique:categories'],
+                'parent_id' => ['numeric'],
+            ]
+        );
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
+        if ($validation->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'ErrorValidated',
+                'data' => $validation->errors()
+            ], 422);
+        }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
+        $data = $request->all();
+        $category = Category::create($data);
+        return response()->json([
+            'status' => true,
+            'message' => 'Success',
+            'data' => new CategoryResource($category)
+        ], 200);
     }
 
     /**
@@ -59,7 +58,37 @@ class CategoryController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $category = Category::find($id);
+        if (!$category) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Không tồn tại',
+                'data' => []
+            ], 404);
+        }
+        $validation = FacadesValidator::make(
+            $request->all(),
+            [
+                'name' => 'required|unique:categories,name,' . $id . ',id',
+                'parent_id' => ['numeric'],
+            ]
+        );
+
+        if ($validation->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Error',
+                'data' => $validation->errors()
+            ], 422);
+        }
+
+        $data = $request->all();
+        $category->update($data);
+        return response()->json([
+            'status' => true,
+            'message' => 'Success',
+            'data' => new CategoryResource($category)
+        ], 200);
     }
 
     /**
@@ -67,6 +96,37 @@ class CategoryController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $category = Category::where('id', $id)->first();
+        if (!$category) {
+            return response()->json([
+                'status' => false,
+                'msg' => 'Not exist',
+                'data' => []
+            ]);
+        }
+        $category->delete();
+        return response()->json([
+            'status' => true,
+            'msg' => 'Success delete',
+            'data' => new CategoryResource($category)
+        ]);
+    }
+
+    public function restore(string $id)
+    {
+        $category = Category::withTrashed()->where('id', $id)->first();
+        if (!$category) {
+            return response()->json([
+                'status' => false,
+                'msg' => 'Not exist',
+                'data' => []
+            ]);
+        }
+        $category->restore();
+        return response()->json([
+            'status' => true,
+            'msg' => 'Success restore',
+            'data' => new CategoryResource($category)
+        ]);
     }
 }
