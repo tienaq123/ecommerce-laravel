@@ -31,7 +31,7 @@ class CategoryController extends Controller
         $validation = FacadesValidator::make(
             $request->all(),
             [
-                'name' => ['required', 'unique'],
+                'name' => ['required', 'unique:categories'],
                 'parent_id' => ['numeric'],
             ]
         );
