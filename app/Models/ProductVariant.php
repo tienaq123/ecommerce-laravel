@@ -38,7 +38,7 @@ class ProductVariant extends Model
      */
     public function product()
     {
-        return $this->belongsTo('App\Models\Product');
+        return $this->belongsTo(Product::class);
     }
 
     /**
@@ -47,5 +47,9 @@ class ProductVariant extends Model
     public function variantAttributes()
     {
         return $this->hasMany('App\Models\VariantAttribute', 'variant_id');
+    }
+    public function attributes()
+    {
+        return $this->belongsToMany(Attribute::class, 'variant_attributes')->withPivot('value_id');
     }
 }

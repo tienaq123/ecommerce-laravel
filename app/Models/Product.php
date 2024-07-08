@@ -36,6 +36,11 @@ class Product extends Model
         return $this->hasMany(ProductVariant::class);
     }
 
+    public function attributes()
+    {
+        return $this->belongsToMany(Attribute::class, 'product_attributes')->withPivot('value_id', 'additional_price');
+    }
+
     public function reviews()
     {
         return $this->hasMany(Review::class);

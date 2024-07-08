@@ -27,11 +27,7 @@ class ProductController extends Controller
             ->orderBy($sortBy, $sortOrder)
             ->paginate($perPage);
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Success get products',
-            'data' => ProductResource::collection($products)->response()->getData(true)
-        ], 200);
+            return ProductResource::collection($products)->response();
     }
 
     /**
