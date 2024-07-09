@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Kyslik\ColumnSortable\Sortable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * @property integer $id
@@ -20,6 +23,11 @@ class Brand extends Model
     /**
      * @var array
      */
+
+    use HasFactory;
+    use SoftDeletes;
+    use Sortable;
+
     protected $fillable = ['name', 'description', 'image', 'status', 'deleted_at', 'created_at', 'updated_at'];
 
     /**

@@ -47,22 +47,20 @@ class BannerRepository extends BaseRepository implements BannerInterface
 
     public function store(BannerRequest $request)
     {
-        $data = $request->validated();
-        $banner = $this->banner->create($data);
+        $banner = $this->banner->create($request->all());
 
         return $banner;
     }
 
     public function update(BannerRequest $request, $id)
     {
-        $data = $request->validated();
         $banner = $this->banner->find($id);
 
         if (!$banner) {
             return null;
         }
 
-        $banner->update($data);
+        $banner->update($request->all());
         return $banner;
     }
 
