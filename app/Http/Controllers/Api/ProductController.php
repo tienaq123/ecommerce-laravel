@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\ProductResource;
+use App\Http\Resources\Products\ProductResource;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -15,19 +15,25 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $sortBy = $request->get('sort_by', 'id');
-        $sortOrder = $request->get('sort_order', 'asc');
-        $search = $request->get('search', '');
-        $perPage = $request->get('per_page', 10);
+        // $sortBy = $request->get('sort_by', 'id');
+        // $sortOrder = $request->get('sort_order', 'asc');
+        // $search = $request->get('search', '');
+        // $perPage = $request->get('per_page', 10);
 
-        $products = Product::when($search, function ($query, $search) {
-            return $query->where('name', 'like', "%{$search}%")
-                ->orWhere('description', 'like', "%{$search}%");
-        })
-            ->orderBy($sortBy, $sortOrder)
-            ->paginate($perPage);
+        // $products = Product::when($search, function ($query, $search) {
+        //     return $query->where('name', 'like', "%{$search}%")
+        //         ->orWhere('description', 'like', "%{$search}%");
+        // })
+        //     ->orderBy($sortBy, $sortOrder)
+        //     ->paginate($perPage);
 
-            return ProductResource::collection($products)->response();
+        // return ProductResource::collection($products)->response();
+        $products = Product::with(['category', 'brand', 'productImages', 'productVariants.attributes'])->get();
+        return response()->json([
+            'status' => true,
+            'message' => 'Success get products',
+            'data' => ProductResource::collection($products)
+        ], 200);
     }
 
     /**

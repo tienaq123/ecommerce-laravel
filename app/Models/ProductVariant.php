@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property integer $id
@@ -20,36 +21,28 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ProductVariant extends Model
 {
-    /**
-     * @var array
-     */
-    protected $fillable = ['product_id', 'sku', 'stock', 'price', 'thumbnail', 'deleted_at', 'created_at', 'updated_at'];
+    use SoftDeletes;
 
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
+    protected $fillable = ['product_id', 'sku', 'stock', 'price', 'thumbnail'];
+
     public function orderItems()
     {
-        return $this->hasMany('App\Models\OrderItem', 'variant_id');
+        return $this->hasMany(OrderItem::class, 'variant_id');
     }
 
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
     public function product()
     {
         return $this->belongsTo(Product::class);
     }
 
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
     public function variantAttributes()
     {
-        return $this->hasMany('App\Models\VariantAttribute', 'variant_id');
+        return $this->hasMany(VariantAttribute::class, 'variant_id');
     }
+
     public function attributes()
     {
-        return $this->belongsToMany(Attribute::class, 'variant_attributes')->withPivot('value_id');
+        return $this->belongsToMany(Attribute::class, 'variant_attributes', 'variant_id', 'attribute_id')
+            ->withPivot('value_id');
     }
 }

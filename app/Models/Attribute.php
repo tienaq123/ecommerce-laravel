@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property integer $id
@@ -17,32 +18,21 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Attribute extends Model
 {
-    /**
-     * @var array
-     */
-    protected $fillable = ['name', 'display_type', 'deleted_at', 'created_at', 'updated_at'];
+    use SoftDeletes;
+    protected $fillable = ['name', 'display_type'];
 
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
     public function attributeValues()
     {
-        return $this->hasMany('App\Models\AttributeValue');
+        return $this->hasMany(AttributeValue::class);
     }
 
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
     public function productAttributes()
     {
-        return $this->hasMany('App\Models\ProductAttribute');
+        return $this->hasMany(ProductAttribute::class);
     }
 
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
     public function variantAttributes()
     {
-        return $this->hasMany('App\Models\VariantAttribute');
+        return $this->hasMany(VariantAttribute::class);
     }
 }

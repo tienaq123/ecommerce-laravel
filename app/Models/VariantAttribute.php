@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property integer $variant_id
@@ -14,32 +15,22 @@ use Illuminate\Database\Eloquent\Model;
  */
 class VariantAttribute extends Model
 {
-    /**
-     * @var array
-     */
+    use SoftDeletes;
+
     protected $fillable = ['variant_id', 'attribute_id', 'value_id'];
 
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
     public function attributeValue()
     {
-        return $this->belongsTo('App\Models\AttributeValue', 'value_id');
+        return $this->belongsTo(AttributeValue::class, 'value_id');
     }
 
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
     public function attribute()
     {
-        return $this->belongsTo('App\Models\Attribute');
+        return $this->belongsTo(Attribute::class);
     }
 
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
     public function productVariant()
     {
-        return $this->belongsTo('App\Models\ProductVariant', 'variant_id');
+        return $this->belongsTo(ProductVariant::class, 'variant_id');
     }
 }
