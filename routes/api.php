@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BannerController;
+use App\Http\Controllers\Api\BrandController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductVariantController;
@@ -19,6 +20,8 @@ Route::apiResource('banners', BannerController::class);
 Route::put('/banners/toggle/{id}', [BannerController::class, 'toggleStatus']);
 //categories
 Route::apiResource('categories', CategoryController::class);
+Route::apiResource('brands', BrandController::class);
+
 Route::post('/categories/restore/{id}', [CategoryController::class, 'restore']);
 //products
 Route::apiResource('products', ProductController::class);
@@ -28,12 +31,3 @@ Route::apiResource('product-variants', ProductVariantController::class);
 
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
-// Route::get('/categories', function () {
-//     $data = [
-//         'message' => 'Xin chào từ JSON!',
-//         'timestamp' => now()
-//     ];
-
-//     // Trả về dữ liệu dưới dạng JSON
-//     return response()->json($data);
-// });
