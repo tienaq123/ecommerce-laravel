@@ -15,7 +15,7 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories = Category::with('children.children.children.children')->whereNull('parent_id')->get();
+        $categories = Category::with('children.children.children')->whereNull('parent_id')->get();
         return response()->json([
             'status' => true,
             'message' => 'Success categories',

@@ -23,7 +23,7 @@ class ProductVariant extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['product_id', 'sku', 'stock', 'price', 'thumbnail'];
+    protected $fillable = ['product_id', 'sku', 'stock', 'price', 'thumbnail', 'deleted_at', 'created_at', 'updated_at'];
 
     public function orderItems()
     {

@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class VariantAttribute extends Model
 {
     use SoftDeletes;
+    public $timestamps = false;
 
     protected $fillable = ['variant_id', 'attribute_id', 'value_id'];
 

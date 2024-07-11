@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Products\ProductResource;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -15,20 +16,38 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        // $sortBy = $request->get('sort_by', 'id');
-        // $sortOrder = $request->get('sort_order', 'asc');
-        // $search = $request->get('search', '');
-        // $perPage = $request->get('per_page', 10);
+        $query = Product::with(['category', 'brand', 'productImages', 'productVariants.attributes']);
 
-        // $products = Product::when($search, function ($query, $search) {
-        //     return $query->where('name', 'like', "%{$search}%")
-        //         ->orWhere('description', 'like', "%{$search}%");
-        // })
-        //     ->orderBy($sortBy, $sortOrder)
-        //     ->paginate($perPage);
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where('name', 'like', '%' . $search . '%')
+                ->orWhere('description', 'like', '%' . $search . '%');
+        }
 
-        // return ProductResource::collection($products)->response();
-        $products = Product::with(['category', 'brand', 'productImages', 'productVariants.attributes'])->get();
+        if ($request->has('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+        if ($request->has('brand_id')) {
+            $query->where('brand_id', $request->brand_id);
+        }
+        if ($request->has('min_price')) {
+            $query->where('price', '>=', $request->min_price);
+        }
+        if ($request->has('max_price')) {
+            $query->where('price', '<=', $request->max_price);
+        }
+        if ($request->has('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->has('sort_by')) {
+            $sortBy = $request->sort_by;
+            $sortOrder = $request->sort_order ?? 'asc';
+            $query->orderBy($sortBy, $sortOrder);
+        }
+
+        $products = $query->get();
+
         return response()->json([
             'status' => true,
             'message' => 'Success get products',
@@ -41,6 +60,7 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
+        // Validate sản phẩm và các biến thể
         $validation = Validator::make(
             $request->all(),
             [
@@ -53,44 +73,82 @@ class ProductController extends Controller
                 'brand_id' => 'nullable|exists:brands,id',
                 'promotion' => 'nullable|string',
                 'status' => 'nullable|string',
+                'variants' => 'required|array',
+                'variants.*.sku' => 'required|string|max:50',
+                'variants.*.stock' => 'required|integer',
+                'variants.*.price' => 'nullable|numeric',
+                'variants.*.attributes' => 'required|array',
+                'variants.*.attributes.*.attribute_id' => 'required|exists:attributes,id',
+                'variants.*.attributes.*.value_id' => 'required|exists:attribute_values,id',
+                'images' => 'required|array',
+                'images.*.file' => 'required|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'images.*.is_thumbnail' => 'nullable|boolean'
             ]
         );
 
         if ($validation->fails()) {
             return response()->json([
                 'status' => false,
-                'message' => 'Validation Error',
+                'message' => 'ErrorValidated',
                 'data' => $validation->errors()
             ], 422);
         }
 
-        $product = Product::create($request->all());
-        return response()->json([
-            'status' => true,
-            'message' => 'Product created successfully',
-            'data' => new ProductResource($product)
-        ], 201);
-    }
+        $product = Product::create($request->only(['name', 'description', 'price', 'price_old', 'quantity', 'category_id', 'brand_id', 'promotion', 'status']));
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        $product = Product::find($id);
-        if (!$product) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Product not found',
-                'data' => []
-            ], 404);
+        foreach ($request->variants as $variantData) {
+            $productVariant = $product->productVariants()->create([
+                'sku' => $variantData['sku'],
+                'stock' => $variantData['stock'],
+                'price' => $variantData['price'],
+                'thumbnail' => $variantData['thumbnail'] ?? null
+            ]);
+
+            foreach ($variantData['attributes'] as $attribute) {
+                $productVariant->variantAttributes()->create([
+                    'attribute_id' => $attribute['attribute_id'],
+                    'value_id' => $attribute['value_id']
+                ]);
+            }
+        }
+
+        foreach ($request->file('images') as $imageData) {
+            $path = $imageData['file']->store('product_images', 'public');
+
+            $product->productImages()->create([
+                'image_url' => $path,
+                'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
+            ]);
         }
 
         return response()->json([
             'status' => true,
             'message' => 'Success',
             'data' => new ProductResource($product)
-        ]);
+        ], 200);
+    }
+
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
+    {
+        $product = Product::with(['category', 'brand', 'productImages', 'productVariants.attributes'])->find($id);
+
+        if (!$product) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Product not found',
+                'data' => null
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Success get product details',
+            'data' => new ProductResource($product)
+        ], 200);
     }
 
     /**
@@ -98,15 +156,6 @@ class ProductController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $product = Product::find($id);
-        if (!$product) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Product not found',
-                'data' => []
-            ], 404);
-        }
-
         $validation = Validator::make(
             $request->all(),
             [
@@ -119,18 +168,75 @@ class ProductController extends Controller
                 'brand_id' => 'nullable|exists:brands,id',
                 'promotion' => 'nullable|string',
                 'status' => 'nullable|string',
+                'variants' => 'sometimes|array',
+                'variants.*.id' => 'sometimes|exists:product_variants,id',
+                'variants.*.sku' => 'required|string|max:50',
+                'variants.*.stock' => 'required|integer',
+                'variants.*.price' => 'nullable|numeric',
+                'variants.*.attributes' => 'required|array',
+                'variants.*.attributes.*.attribute_id' => 'required|exists:attributes,id',
+                'variants.*.attributes.*.value_id' => 'required|exists:attribute_values,id'
             ]
         );
 
         if ($validation->fails()) {
             return response()->json([
                 'status' => false,
-                'message' => 'Validation Error',
+                'message' => 'ErrorValidated',
                 'data' => $validation->errors()
             ], 422);
         }
 
-        $product->update($request->all());
+        $product = Product::find($id);
+
+        if (!$product) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Product not found',
+                'data' => null
+            ], 404);
+        }
+
+        $product->update($request->only(['name', 'description', 'price', 'price_old', 'quantity', 'category_id', 'brand_id', 'promotion', 'status']));
+
+        if ($request->has('variants')) {
+            foreach ($request->variants as $variantData) {
+                if (isset($variantData['id'])) {
+                    $productVariant = ProductVariant::find($variantData['id']);
+                    if ($productVariant) {
+                        $productVariant->update([
+                            'sku' => $variantData['sku'],
+                            'stock' => $variantData['stock'],
+                            'price' => $variantData['price'],
+                            'thumbnail' => $variantData['thumbnail'] ?? null
+                        ]);
+
+                        $productVariant->variantAttributes()->delete();
+                        foreach ($variantData['attributes'] as $attribute) {
+                            $productVariant->variantAttributes()->create([
+                                'attribute_id' => $attribute['attribute_id'],
+                                'value_id' => $attribute['value_id']
+                            ]);
+                        }
+                    }
+                } else {
+                    $productVariant = $product->productVariants()->create([
+                        'sku' => $variantData['sku'],
+                        'stock' => $variantData['stock'],
+                        'price' => $variantData['price'],
+                        'thumbnail' => $variantData['thumbnail'] ?? null
+                    ]);
+
+                    foreach ($variantData['attributes'] as $attribute) {
+                        $productVariant->variantAttributes()->create([
+                            'attribute_id' => $attribute['attribute_id'],
+                            'value_id' => $attribute['value_id']
+                        ]);
+                    }
+                }
+            }
+        }
+
         return response()->json([
             'status' => true,
             'message' => 'Product updated successfully',
@@ -143,7 +249,8 @@ class ProductController extends Controller
      */
     public function destroy(string $id)
     {
-        $product = Product::find($id);
+        $product = Product::with('productVariants.variantAttributes')->find($id);
+
         if (!$product) {
             return response()->json([
                 'status' => false,
@@ -152,7 +259,14 @@ class ProductController extends Controller
             ], 404);
         }
 
+        foreach ($product->productVariants as $variant) {
+            foreach ($variant->variantAttributes as $attribute) {
+                $attribute->delete();
+            }
+            $variant->delete();
+        }
         $product->delete();
+
         return response()->json([
             'status' => true,
             'message' => 'Product deleted successfully',
@@ -165,7 +279,12 @@ class ProductController extends Controller
      */
     public function restore(string $id)
     {
-        $product = Product::withTrashed()->find($id);
+        $product = Product::withTrashed()->with(['productVariants' => function ($query) {
+            $query->withTrashed()->with(['variantAttributes' => function ($query) {
+                $query->withTrashed();
+            }]);
+        }])->find($id);
+
         if (!$product) {
             return response()->json([
                 'status' => false,
@@ -173,8 +292,16 @@ class ProductController extends Controller
                 'data' => []
             ], 404);
         }
-
         $product->restore();
+
+        foreach ($product->productVariants as $variant) {
+            $variant->restore();
+
+            foreach ($variant->variantAttributes as $attribute) {
+                $attribute->restore();
+            }
+        }
+
         return response()->json([
             'status' => true,
             'message' => 'Product restored successfully',
