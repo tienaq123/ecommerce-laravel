@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Products;
 
+use App\Http\Resources\BrandResource;
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\ProductImageResource;
 use Illuminate\Http\Request;
@@ -31,10 +32,11 @@ class ProductResource extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'category' => new CategoryResource($this->whenLoaded('category')),
-            // 'brand' => new BrandResource($this->whenLoaded('brand')),
+            'brand' => new BrandResource($this->whenLoaded('brand')),
             'productImages' => ProductImageResource::collection($this->whenLoaded('productImages')),
             'productVariants' => ProductVariantResource::collection($this->whenLoaded('productVariants')),
             'attributes' => ProductAttributeResource::collection($this->whenLoaded('attributes')),
+
         ];
     }
 }

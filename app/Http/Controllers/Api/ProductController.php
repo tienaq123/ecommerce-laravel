@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Products\ProductResource;
 use App\Models\Product;
+use App\Models\ProductImage;
 use App\Models\ProductVariant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
@@ -175,7 +177,11 @@ class ProductController extends Controller
                 'variants.*.price' => 'nullable|numeric',
                 'variants.*.attributes' => 'required|array',
                 'variants.*.attributes.*.attribute_id' => 'required|exists:attributes,id',
-                'variants.*.attributes.*.value_id' => 'required|exists:attribute_values,id'
+                'variants.*.attributes.*.value_id' => 'required|exists:attribute_values,id',
+                'images' => 'sometimes|array',
+                'images.*.id' => 'sometimes|exists:product_images,id',
+                'images.*.file' => 'sometimes|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'images.*.is_thumbnail' => 'nullable|boolean'
             ]
         );
 
@@ -237,12 +243,41 @@ class ProductController extends Controller
             }
         }
 
+        if ($request->has('images')) {
+            foreach ($request->images as $imageData) {
+                if (isset($imageData['id'])) {
+                    $productImage = ProductImage::find($imageData['id']);
+                    if ($productImage) {
+                        if (isset($imageData['file'])) {
+                            Storage::disk('public')->delete($productImage->image_url);
+                            $path = $imageData['file']->store('product_images', 'public');
+                            $productImage->update([
+                                'image_url' => $path,
+                                'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
+                            ]);
+                        } else {
+                            $productImage->update([
+                                'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
+                            ]);
+                        }
+                    }
+                } else {
+                    $path = $imageData['file']->store('product_images', 'public');
+                    $product->productImages()->create([
+                        'image_url' => $path,
+                        'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
+                    ]);
+                }
+            }
+        }
+
         return response()->json([
             'status' => true,
             'message' => 'Product updated successfully',
             'data' => new ProductResource($product)
         ], 200);
     }
+
 
     /**
      * Remove the specified resource from storage.
