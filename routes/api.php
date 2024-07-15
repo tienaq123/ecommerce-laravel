@@ -25,7 +25,7 @@ Route::apiResource('brands', BrandController::class);
 Route::post('/categories/restore/{id}', [CategoryController::class, 'restore']);
 //products
 Route::apiResource('products', ProductController::class);
-// Route::post('/product/restore/{id}', [ProductController::class, 'restore']);
+Route::post('/product/restore/{id}', [ProductController::class, 'restore']);
 
-// Route::post('register', [AuthController::class, 'register']);
-// Route::post('login', [AuthController::class, 'login']);
+Route::post('register', [AuthController::class, 'register']);
+Route::post('login', [AuthController::class, 'login']);
