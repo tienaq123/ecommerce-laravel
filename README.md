@@ -5,12 +5,13 @@ npm instal
 #2
 import db
 #3
+
  <!--  -->
+
 #4
 php artisan storage:link
 #5
 php artisan serve
-
 
 Api
 Categories
