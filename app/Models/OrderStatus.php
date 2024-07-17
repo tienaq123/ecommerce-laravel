@@ -14,8 +14,8 @@ class OrderStatus extends Model
         'status',
     ];
 
-    // public function orderHistory()
-    // {
-    //     return $this->hasMany(OrderHistory::class, 'status_id');
-    // }
+    public function orderHistory()
+    {
+        return $this->hasMany(OrderHistory::class, 'status_id');
+    }
 }
