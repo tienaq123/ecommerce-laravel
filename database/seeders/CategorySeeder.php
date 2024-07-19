@@ -13,9 +13,9 @@ class CategorySeeder extends Seeder
      */
     public function run(): void
     {
-        $parentCategories = Category::factory()->count(5)->create();
-        $parentCategories->each(function ($category) {
-            Category::factory()->count(3)->create(['parent_id' => $category->id]);
-        });
+        // $parentCategories = Category::factory()->count(5)->create();
+        // $parentCategories->each(function ($category) {
+        //     Category::factory()->count(3)->create(['parent_id' => $category->id]);
+        // });
     }
 }
