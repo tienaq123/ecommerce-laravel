@@ -12,7 +12,7 @@ class Category extends Model
     use HasFactory;
     use Sortable;
     use SoftDeletes;
-    
+
     protected $fillable = ['name', 'description', 'parent_id', 'status'];
 
     public function children()
@@ -28,5 +28,19 @@ class Category extends Model
     public function products()
     {
         return $this->hasMany(Product::class);
+    }
+
+    public function allChildren()
+    {
+        return $this->children()->with('allChildren');
+    }
+
+    public function allChildrenIds()
+    {
+        $ids = $this->children->pluck('id')->toArray();
+        foreach ($this->children as $child) {
+            $ids = array_merge($ids, $child->allChildrenIds());
+        }
+        return $ids;
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Products\ProductResource;
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
@@ -27,8 +28,23 @@ class ProductController extends Controller
         }
 
         if ($request->has('category_id')) {
-            $query->where('category_id', $request->category_id);
+            $category = Category::find($request->category_id);
+            if ($category) {
+                $categoryIds = $category->allChildrenIds();
+                $categoryIds[] = $category->id;
+                $query->whereIn('category_id', $categoryIds);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Category not found',
+                    'data' => []
+                ], 404);
+            }
         }
+
+        // if ($request->has('category_id')) {
+        //     $query->where('category_id', $request->category_id);
+        // }
         if ($request->has('brand_id')) {
             $query->where('brand_id', $request->brand_id);
         }
