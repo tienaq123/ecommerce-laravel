@@ -121,4 +121,18 @@ class AuthController extends Controller
             ], 422);
         }
     }
+    public function getTokenResetPassword(Request $request)
+    {
+        if ($request->has('token')) {
+            return response()->json([
+                'status' => true,
+                'token' => $request->token
+            ], 200);
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'Lỗi: Token không tồn tại'
+            ], 400);
+        }
+    }
 }
