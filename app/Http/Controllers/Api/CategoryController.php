@@ -23,9 +23,23 @@ class CategoryController extends Controller
         ], 200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    public function show($id)
+    {
+        $category = Category::with('children')->find($id);
+
+        if (!$category) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Category not found',
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Category retrieved successfully',
+            'data' => new CategoryResource($category),
+        ], 200);
+    }
     public function store(Request $request)
     {
         $validation = FacadesValidator::make(
