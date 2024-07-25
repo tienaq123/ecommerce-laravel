@@ -8,7 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     use HasFactory;
-    protected $fillable = ['user_id', 'total_amount', 'status_id'];
+    protected $fillable = [
+        'user_id', 'total_amount', 'status_id',
+        'shipping_method', 'payment', 'address_detail',
+        'ward', 'district', 'city'
+    ];
 
     public function user()
     {
@@ -28,5 +32,9 @@ class Order extends Model
     public function history()
     {
         return $this->hasMany(OrderHistory::class, 'order_id');
+    }
+    public function guestOrder()
+    {
+        return $this->hasOne(GuestOrder::class, 'order_id');
     }
 }

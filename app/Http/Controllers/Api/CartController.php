@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\GuestOrder;
 use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -29,7 +30,7 @@ class CartController extends Controller
             return response()->json(['message' => 'Product or variant not found'], 404);
         }
 
-        if ($request->quantity > $product->quantity) {
+        if ($request->quantity > ($variant ? $variant->stock : $product->quantity)) {
             return response()->json(['message' => 'Insufficient product quantity'], 400);
         }
 
@@ -48,7 +49,7 @@ class CartController extends Controller
             $order->total_amount += $orderItem->price * $request->quantity;
             $order->save();
 
-            return response()->json(['message' => 'Product added to cart successfully user', 'data' => $order]);
+            return response()->json(['message' => 'Product added to cart successfully', 'data' => $order]);
         } else {
             $cart = session()->get('cart', []);
 
@@ -75,10 +76,9 @@ class CartController extends Controller
 
             session()->put('cart', $cart);
 
-            return response()->json(['message' => 'Product added to cart successfully session', 'data' => $cart]);
+            return response()->json(['message' => 'Product added to cart successfully', 'data' => $cart]);
         }
     }
-
 
     public function viewCart()
     {
@@ -136,18 +136,22 @@ class CartController extends Controller
 
             return response()->json($cartDetails);
         } else {
-            return response()->json(['message' => 'Your cart is empty ss'], 404);
+            $cart = session()->get('cart', []);
+
+            if (empty($cart)) {
+                return response()->json(['message' => 'Your cart is empty'], 404);
+            }
+
+            return response()->json(['message' => 'Success', 'data' => $cart]);
         }
     }
 
     public function updateCart(Request $request, $itemId)
     {
-
         $validator = Validator::make($request->all(), [
             'quantity' => 'required|integer|min:1',
         ]);
 
-        // Check if validation fails
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
@@ -170,6 +174,13 @@ class CartController extends Controller
                 return response()->json(['message' => 'Item not found in cart'], 404);
             }
 
+            $product = Product::find($orderItem->product_id);
+            $variant = $orderItem->variant_id ? ProductVariant::find($orderItem->variant_id) : null;
+
+            if ($request->quantity > ($variant ? $variant->stock : $product->quantity)) {
+                return response()->json(['message' => 'Insufficient product quantity'], 400);
+            }
+
             $order->total_amount -= $orderItem->price * $orderItem->quantity;
             $orderItem->quantity = $request->quantity;
             $orderItem->save();
@@ -183,6 +194,13 @@ class CartController extends Controller
 
             foreach ($cart as &$item) {
                 if ($item['product_id'] == $itemId) {
+                    $product = Product::find($item['product_id']);
+                    $variant = $item['variant_id'] ? ProductVariant::find($item['variant_id']) : null;
+
+                    if ($request->quantity > ($variant ? $variant->stock : $product->quantity)) {
+                        return response()->json(['message' => 'Insufficient product quantity'], 400);
+                    }
+
                     $item['quantity'] = $request->quantity;
                     break;
                 }
@@ -231,6 +249,129 @@ class CartController extends Controller
         }
     }
 
+    public function clearCart()
+    {
+        if (Auth::check()) {
+            $userId = Auth::id(); 
+            $order = Order::with(['items'])->where('user_id', $userId)->where('status_id', 1)->first();
+
+            if (!$order) {
+                return response()->json(['message' => 'Your cart is already empty'], 404);
+            }
+
+            foreach ($order->items as $item) {
+                $item->delete();
+            }
+
+            $order->total_amount = 0;
+            $order->save();
+
+            return response()->json(['message' => 'Cart cleared successfully']);
+        } else {
+            session()->forget('cart');
+            return response()->json(['message' => 'Cart cleared successfully']);
+        }
+    }
+
+    public function checkout(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'shipping_method' => 'required|string|max:255',
+            'payment' => 'required|string|max:255',
+            'address_detail' => 'required|string|max:255',
+            'ward' => 'required|string|max:255',
+            'district' => 'required|string|max:255',
+            'city' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|string|email|max:255',
+            'phone_number' => 'required|string|max:20',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation Error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        if (Auth::check()) {
+            $userId = Auth::id();
+            $order = Order::where('user_id', $userId)->where('status_id', 1)->first();
+
+            if (!$order) {
+                return response()->json(['message' => 'Your cart is empty'], 404);
+            }
+
+            // Update order status to 'confirmed'
+            $order->status_id = 2; // Assuming 2 is for confirmed
+            $order->shipping_method = $request->shipping_method;
+            $order->payment = $request->payment;
+            $order->address_detail = $request->address_detail;
+            $order->ward = $request->ward;
+            $order->district = $request->district;
+            $order->city = $request->city;
+            $order->save();
+
+            // Clear the session cart if it exists
+            session()->forget('cart');
+
+            return response()->json([
+                'message' => 'Order has been placed successfully',
+                'order' => $order
+            ]);
+        } else {
+            $cart = session()->get('cart', []);
+
+            if (empty($cart)) {
+                return response()->json(['message' => 'Your cart is empty'], 404);
+            }
+
+            // Create a new order for the guest user
+            $order = Order::create([
+                'user_id' => null, // Guest user
+                'total_amount' => array_sum(array_column($cart, 'price')),
+                'status_id' => 2, // Assuming 2 is for confirmed
+                'shipping_method' => $request->shipping_method,
+                'payment' => $request->payment,
+                'address_detail' => $request->address_detail,
+                'ward' => $request->ward,
+                'district' => $request->district,
+                'city' => $request->city,
+            ]);
+
+            // Add items to the order
+            foreach ($cart as $cartItem) {
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'product_id' => $cartItem['product_id'],
+                    'variant_id' => $cartItem['variant_id'],
+                    'quantity' => $cartItem['quantity'],
+                    'price' => $cartItem['price'],
+                ]);
+            }
+
+            // Save guest order details
+            GuestOrder::create([
+                'order_id' => $order->id,
+                'name' => $request->name,
+                'email' => $request->email,
+                'phone_number' => $request->phone_number,
+                'address_detail' => $request->address_detail,
+                'ward' => $request->ward,
+                'district' => $request->district,
+                'city' => $request->city,
+            ]);
+
+            // Clear the session cart
+            session()->forget('cart');
+
+            return response()->json([
+                'message' => 'Order has been placed successfully',
+                'order' => $order
+            ]);
+        }
+    }
 
     private function getProductPrice($productId, $variantId = null)
     {
