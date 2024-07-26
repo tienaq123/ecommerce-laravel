@@ -17,13 +17,14 @@ class ProductVariantResource extends JsonResource
             'price' => $this->price,
             'thumbnail' => $this->thumbnail,
             'attributes' => $this->attributes->map(function ($attribute) {
-                $value = $attribute->values->firstWhere('id', $attribute->pivot->value_id)->value;
-                return [
-                    'attribute_id' => $attribute->pivot->attribute_id,
-                    'attribute_name' => $attribute->name,
-                    'value_id' => $attribute->pivot->value_id,
-                    'value_name' => $value,
-                ];
+                $value = $attribute->values->firstWhere('id', $attribute->pivot->value_id);
+                return value($value);
+                // return [
+                //     'attribute_id' => $attribute->pivot->attribute_id,
+                //     'attribute_name' => $attribute->name,
+                //     'value_id' => $attribute->pivot->value_id,
+                //     'value_name' => $value,
+                // ];
             }),
         ];
     }

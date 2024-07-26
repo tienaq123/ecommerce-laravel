@@ -33,12 +33,12 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
-    // Route::post('/cart/add', [CartController::class, 'addToCart']);
-    // Route::get('/cart', [CartController::class, 'viewCart']);
-    // Route::delete('/cart/{itemId}', [CartController::class, 'removeFromCart']);
-    // Route::put('/cart/{itemId}', [CartController::class, 'updateCart']);
-    // Route::delete('/cart', [CartController::class, 'clearCart']); // Clear Cart
-    // Route::post('/cart/checkout', [CartController::class, 'checkout']); // Checkout
+    Route::post('/cart/add', [CartController::class, 'addToCart']);
+    Route::get('/cart', [CartController::class, 'viewCart']);
+    Route::delete('/cart/{itemId}', [CartController::class, 'removeFromCart']);
+    Route::put('/cart/{itemId}', [CartController::class, 'updateCart']);
+    Route::delete('/cart', [CartController::class, 'clearCart']); // Clear Cart
+    Route::post('/cart/checkout', [CartController::class, 'checkout']); // Checkout
 });
 
 

@@ -20,7 +20,7 @@ return new class extends Migration
             $table->integer('quantity');
             $table->integer('view')->default(0);
             $table->unsignedBigInteger('category_id');
-            $table->unsignedBigInteger('brand_id');
+            $table->unsignedBigInteger('brand_id')->nullable();
             $table->string('promotion')->nullable();
             $table->string('status')->default('Active');
             $table->softDeletes();
