@@ -87,7 +87,7 @@ class CartController extends Controller
             $order = Order::with(['items.product', 'items.variant'])->where('user_id', $userId)->where('status_id', 1)->first();
 
             if (!$order) {
-                return response()->json(['message' => 'Your cart is empty'], 404);
+                return response()->json(['message' => 'Your cart is user empty'], 404);
             }
 
             $cartDetails = [
@@ -139,7 +139,7 @@ class CartController extends Controller
             $cart = session()->get('cart', []);
 
             if (empty($cart)) {
-                return response()->json(['message' => 'Your cart is empty'], 404);
+                return response()->json(['message' => 'Your cart session is empty'], 404);
             }
 
             return response()->json(['message' => 'Success', 'data' => $cart]);
@@ -252,7 +252,7 @@ class CartController extends Controller
     public function clearCart()
     {
         if (Auth::check()) {
-            $userId = Auth::id(); 
+            $userId = Auth::id();
             $order = Order::with(['items'])->where('user_id', $userId)->where('status_id', 1)->first();
 
             if (!$order) {
