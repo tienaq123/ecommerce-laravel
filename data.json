@@ -1,0 +1,267 @@
+{
+    "name": "Áo Dài Tay Kid Happy Face Mickey",
+    "description": "Sản phẩm áo dài tay trẻ trung năng động phù hợp với các bạn thiếu niên. Chất vải dày dặn, giữ ấm hiệu quả lại in hình Mickey siêu ấn tượng. Đây hứa hẹn là món quà yêu thích trong tủ đồ các bạn nhỏ mùa này.",
+    "price": 469000,
+    "price_old": 600000,
+    "quantity": 20,
+    "category_id":51,
+    "brand_id": null,
+    "promotion": "Giảm giá đặc biệt",
+    "status": "Active",
+    "variants": [
+        {
+            "sku": "NI-N-BR-S",
+            "stock": 25,
+            "price": 469000,
+            "attributes": [
+                {
+                    "attribute_id": 1,
+                    "value_id": 6
+                },
+                {
+                    "attribute_id": 2,
+                    "value_id": 8
+                }
+            ]
+        },
+        {
+            "sku": "NI-N-BR-M",
+            "stock": 25,
+            "price": 469000,
+            "attributes": [
+                {
+                    "attribute_id": 1,
+                    "value_id": 6
+                },
+                {
+                    "attribute_id": 2,
+                    "value_id": 9
+                }
+            ]
+        },
+        {
+            "sku": "NI-N-BR-L",
+            "stock": 25,
+            "price": 469000,
+            "attributes": [
+                {
+                    "attribute_id": 1,
+                    "value_id": 6
+                },
+                {
+                    "attribute_id": 2,
+                    "value_id": 10
+                }
+            ]
+        },
+        {
+            "sku": "NI-N-BR-XL",
+            "stock": 25,
+            "price": 469000,
+            "attributes": [
+                {
+                    "attribute_id": 1,
+                    "value_id": 6
+                },
+                {
+                    "attribute_id": 2,
+                    "value_id": 11
+                }
+            ]
+        },
+        {
+            "sku": "NI-C-S",
+            "stock": 25,
+            "price": 469000,
+            "attributes": [
+                {
+                    "attribute_id": 1,
+                    "value_id": 7
+                },
+                {
+                    "attribute_id": 2,
+                    "value_id": 8
+                }
+            ]
+        },
+        {
+            "sku": "NI-C-M",
+            "stock": 25,
+            "price": 469000,
+            "attributes": [
+                {
+                    "attribute_id": 1,
+                    "value_id": 7
+                },
+                {
+                    "attribute_id": 2,
+                    "value_id": 9
+                }
+            ]
+        },
+        {
+            "sku": "NI-C-L",
+            "stock": 25,
+            "price": 469000,
+            "attributes": [
+                {
+                    "attribute_id": 1,
+                    "value_id": 7
+                },
+                {
+                    "attribute_id": 2,
+                    "value_id": 10
+                }
+            ]
+        },
+        {
+            "sku": "NI-C-XL",
+            "stock": 25,
+            "price": 469000,
+            "attributes": [
+                {
+                    "attribute_id": 1,
+                    "value_id": 7
+                },
+                {
+                    "attribute_id": 2,
+                    "value_id": 11
+                }
+            ]
+        },
+        {
+            "sku": "NI-D-S",
+            "stock": 25,
+            "price": 469000,
+            "attributes": [
+                {
+                    "attribute_id": 1,
+                    "value_id": 2
+                },
+                {
+                    "attribute_id": 2,
+                    "value_id": 8
+                }
+            ]
+        },
+        {
+            "sku": "NI-D-M",
+            "stock": 25,
+            "price": 469000,
+            "attributes": [
+                {
+                    "attribute_id": 1,
+                    "value_id": 2
+                },
+                {
+                    "attribute_id": 2,
+                    "value_id": 9
+                }
+            ]
+        },
+        {
+            "sku": "NI-D-L",
+            "stock": 25,
+            "price": 469000,
+            "attributes": [
+                {
+                    "attribute_id": 1,
+                    "value_id": 2
+                },
+                {
+                    "attribute_id": 2,
+                    "value_id": 10
+                }
+            ]
+        },
+        {
+            "sku": "NI-D-XL",
+            "stock": 25,
+            "price": 469000,
+            "attributes": [
+                {
+                    "attribute_id": 1,
+                    "value_id": 2
+                },
+                {
+                    "attribute_id": 2,
+                    "value_id": 11
+                }
+            ]
+        },
+        {
+            "sku": "NI-X-S",
+            "stock": 25,
+            "price": 469000,
+            "attributes": [
+                {
+                    "attribute_id": 1,
+                    "value_id": 5
+                },
+                {
+                    "attribute_id": 2,
+                    "value_id": 8
+                }
+            ]
+        },
+        {
+            "sku": "NI-X-M",
+            "stock": 25,
+            "price": 469000,
+            "attributes": [
+                {
+                    "attribute_id": 1,
+                    "value_id": 5
+                },
+                {
+                    "attribute_id": 2,
+                    "value_id": 9
+                }
+            ]
+        },
+        {
+            "sku": "NI-X-L",
+            "stock": 25,
+            "price": 469000,
+            "attributes": [
+                {
+                    "attribute_id": 1,
+                    "value_id": 5
+                },
+                {
+                    "attribute_id": 2,
+                    "value_id": 10
+                }
+            ]
+        },
+        {
+            "sku": "NI-X-XL",
+            "stock": 25,
+            "price": 469000,
+            "attributes": [
+                {
+                    "attribute_id": 1,
+                    "value_id": 5
+                },
+                {
+                    "attribute_id": 2,
+                    "value_id": 11
+                }
+            ]
+        }
+    ],
+    "images": [
+        {
+            "url": "https://m.yodycdn.com/products/ao-dai-tay-tre-em-mickey-yody-atk6170-trg-8.jpg",
+            "is_thumbnail": true
+        },
+        {
+            "url": "https://m.yodycdn.com/products/ao-dai-tay-tre-em-mickey-yody-atk6170-trg-7.jpg",
+            "is_thumbnail": false
+        },
+        {
+            "url": "https://m.yodycdn.com/products/ao-dai-tay-tre-em-mickey-yody-atk6170-trg-10.jpg",
+            "is_thumbnail": false
+        }
+    ]
+}

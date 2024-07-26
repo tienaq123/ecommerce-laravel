@@ -23,3 +23,33 @@ variants[1][attributes][1][attribute_id]: 2
 variants[1][attributes][1][value_id]: 2
 images[0][is_thumbnail]:
 images[1][is_thumbnail]:
+
+
+Full texts
+id
+name
+display_type
+deleted_at
+created_at
+updated_at
+
+1
+Màu sắc
+radio
+NULL
+2024-07-26 10:26:46
+NULL
+
+2
+Kích thước
+radio
+NULL
+2024-07-26 10:26:47
+NULL
+
+3
+Chất liệu
+radio
+NULL
+2024-07-26 10:26:47
+NULL
