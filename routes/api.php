@@ -11,7 +11,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-
 // login
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
@@ -19,29 +18,22 @@ Route::post('forgetpassword', [AuthController::class, 'forgetPassword']);
 Route::post('resetpassword', [AuthController::class, 'resetPassword'])->name('password.reset');
 Route::get('resetpassword', [AuthController::class, 'getTokenResetPassword']);
 
-// Cart session
-Route::post('/cart/add', [CartController::class, 'addToCart']);
-Route::get('/cart', [CartController::class, 'viewCart']);
-Route::delete('/cart/{itemId}', [CartController::class, 'removeFromCart']);
-Route::put('/cart/{itemId}', [CartController::class, 'updateCart']);
-Route::delete('/cart', [CartController::class, 'clearCart']); // Clear Cart
-Route::post('/cart/checkout', [CartController::class, 'checkout']); // Checkout
-
-
+// Cart routes
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
-
     Route::post('/cart/add', [CartController::class, 'addToCart']);
     Route::get('/cart', [CartController::class, 'viewCart']);
     Route::delete('/cart/{itemId}', [CartController::class, 'removeFromCart']);
     Route::put('/cart/{itemId}', [CartController::class, 'updateCart']);
-    Route::delete('/cart', [CartController::class, 'clearCart']); // Clear Cart
-    Route::post('/cart/checkout', [CartController::class, 'checkout']); // Checkout
+    Route::delete('/cart', [CartController::class, 'clearCart']);
+    Route::post('/cart/checkout', [CartController::class, 'checkout']);
 });
 
-
+// Route::post('/cart/add', [CartController::class, 'addToCart']);
+// Route::get('/cart', [CartController::class, 'viewCart']);
+// Route::delete('/cart/{itemId}', [CartController::class, 'removeFromCart']);
+// Route::put('/cart/{itemId}', [CartController::class, 'updateCart']);
+// Route::delete('/cart', [CartController::class, 'clearCart']);
+// Route::post('/cart/checkout', [CartController::class, 'checkout']);
 
 // banners
 Route::apiResource('banners', BannerController::class);
