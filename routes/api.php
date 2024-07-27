@@ -24,6 +24,8 @@ Route::get('resetpassword', [AuthController::class, 'getTokenResetPassword']);
 // User
 Route::get('users', [UserController::class, 'index']);
 Route::post('user/add', [UserController::class, 'store']);
+Route::put('user/update/{id}', [UserController::class, 'update']);
+
 
 // Cart session
 Route::post('/cart/add', [CartController::class, 'addToCart']);

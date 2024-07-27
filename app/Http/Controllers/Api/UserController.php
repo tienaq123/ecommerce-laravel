@@ -4,13 +4,16 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Auth\Events\Validated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
 
+    public function __construct()
+    {
+        $this->middleware(['role:admin', 'auth:sanctum']);
+    }
     public function index(Request $request)
     {
         $keyword = $request->keyword;
@@ -76,7 +79,16 @@ class UserController extends Controller
     }
     public function update(Request $request, string $id)
     {
-        //
+        $user = User::find($id);
+        if (!empty($user)) {
+            $user->update($request->only(['name', 'email', 'password', 'address', 'date_of_birth']));
+            return response()->json([
+                'status' => true,
+                'message' => 'Update user success',
+            ], 200);
+        } else {
+            return false;
+        }
     }
 
     public function destroy(string $id)
