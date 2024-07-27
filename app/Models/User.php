@@ -20,8 +20,13 @@ class User extends Authenticatable implements CanResetPassword
      * @var array<int, string>
      */
     protected $fillable = [
-        'name', 'avatar', 'email', 'role', 'password', 'date_of_birth', 'address', 'phone_number', 'points', 'status'
+        'name', 'avatar', 'email', 'password', 'date_of_birth', 'address', 'phone_number', 'points', 'status', 'role'
     ];
+
+    public function hasRole($role)
+    {
+        return $this->role === $role;
+    }
 
     public function reviews()
     {
