@@ -1,26 +1,26 @@
 {
-    "name": "Áo Dài Tay Kid Happy Face Mickey",
+    "name": "Áo Dài Tay Kid Happy Face Mickey", //tên sản phẩm
     "description": "Sản phẩm áo dài tay trẻ trung năng động phù hợp với các bạn thiếu niên. Chất vải dày dặn, giữ ấm hiệu quả lại in hình Mickey siêu ấn tượng. Đây hứa hẹn là món quà yêu thích trong tủ đồ các bạn nhỏ mùa này.",
-    "price": 469000,
-    "price_old": 600000,
-    "quantity": 20,
-    "category_id":51,
-    "brand_id": null,
-    "promotion": "Giảm giá đặc biệt",
-    "status": "Active",
+    "price": 469000, //giá
+    "price_old": 600000, //giá cũ
+    "quantity": 20, //số lượng
+    "category_id":51, //id của danh mục
+    "brand_id": null, //id của thương hiệu
+    "promotion": "Giảm giá đặc biệt", //khuyến mãi
+    "status": "Active", //trạng thái
     "variants": [
         {
-            "sku": "NI-N-BR-S",
-            "stock": 25,
-            "price": 469000,
+            "sku": "NI-N-BR-S", //Tên biến thể
+            "stock": 25, //số lượng tồn của biến thể
+            "price": 469000, //giá của biến thế
             "attributes": [
                 {
-                    "attribute_id": 1,
-                    "value_id": 6
+                    "attribute_id": 1,  //id của thuộc tính(Ví dụ: id 1: Màu sắc)
+                    "value_id": 6   //id của giá trị thuộc tính(Ví dụ: id 6: Nâu)
                 },
                 {
-                    "attribute_id": 2,
-                    "value_id": 8
+                    "attribute_id": 2,  //id của thuộc tính(Ví dụ: id 2: Kích thước)
+                    "value_id": 8  //id của giá trị thuộc tính(Ví dụ: id 8: S)
                 }
             ]
         },
@@ -30,12 +30,12 @@
             "price": 469000,
             "attributes": [
                 {
-                    "attribute_id": 1,
-                    "value_id": 6
+                    "attribute_id": 1, //id của thuộc tính(Ví dụ: id 1: Màu sắc)
+                    "value_id": 6 //id của giá trị thuộc tính(Ví dụ: id 6: Nâu)
                 },
                 {
-                    "attribute_id": 2,
-                    "value_id": 9
+                    "attribute_id": 2, //id của thuộc tính(Ví dụ: id 2: Kích thước)
+                    "value_id": 9 //id của giá trị thuộc tính(Ví dụ: id 9: M)
                 }
             ]
         },
@@ -45,12 +45,12 @@
             "price": 469000,
             "attributes": [
                 {
-                    "attribute_id": 1,
-                    "value_id": 6
+                    "attribute_id": 1, //id của thuộc tính(Ví dụ: id 1: Màu sắc)
+                    "value_id": 6 //id của giá trị thuộc tính(Ví dụ: id 6: Nâu)
                 },
                 {
-                    "attribute_id": 2,
-                    "value_id": 10
+                    "attribute_id": 2,//id của thuộc tính(Ví dụ: id 2: Kích thước)
+                    "value_id": 10 //id của giá trị thuộc tính(Ví dụ: id 10: L)
                 }
             ]
         },
@@ -60,12 +60,12 @@
             "price": 469000,
             "attributes": [
                 {
-                    "attribute_id": 1,
-                    "value_id": 6
+                    "attribute_id": 1, //id của thuộc tính(Ví dụ: id 1: Màu sắc)
+                    "value_id": 6 //id của giá trị thuộc tính(Ví dụ: id 6: Nâu)
                 },
                 {
-                    "attribute_id": 2,
-                    "value_id": 11
+                    "attribute_id": 2, //id của thuộc tính(Ví dụ: id 2: Kích thước)
+                    "value_id": 11 //id của giá trị thuộc tính(Ví dụ: id 11: XL)
                 }
             ]
         },
@@ -75,12 +75,12 @@
             "price": 469000,
             "attributes": [
                 {
-                    "attribute_id": 1,
-                    "value_id": 7
+                    "attribute_id": 1, //id của thuộc tính(Ví dụ: id 1: Màu sắc)
+                    "value_id": 7 //id của giá trị thuộc tính(Ví dụ: id 7: Cam)
                 },
                 {
-                    "attribute_id": 2,
-                    "value_id": 8
+                    "attribute_id": 2,  //id của thuộc tính(Ví dụ: id 2: Kích thước)
+                    "value_id": 8  //id của giá trị thuộc tính(Ví dụ: id 8: S)
                 }
             ]
         },
@@ -90,12 +90,12 @@
             "price": 469000,
             "attributes": [
                 {
-                    "attribute_id": 1,
-                    "value_id": 7
+                    "attribute_id": 1, //id của thuộc tính(Ví dụ: id 1: Màu sắc)
+                    "value_id": 7 //id của giá trị thuộc tính(Ví dụ: id 7: Cam)
                 },
                 {
-                    "attribute_id": 2,
-                    "value_id": 9
+                    "attribute_id": 2, //id của thuộc tính(Ví dụ: id 2: Kích thước)
+                    "value_id": 9 //id của giá trị thuộc tính(Ví dụ: id 9: M)
                 }
             ]
         },
@@ -105,12 +105,12 @@
             "price": 469000,
             "attributes": [
                 {
-                    "attribute_id": 1,
-                    "value_id": 7
+                    "attribute_id": 1, //id của thuộc tính(Ví dụ: id 1: Màu sắc)
+                    "value_id": 7 //id của giá trị thuộc tính(Ví dụ: id 7: Cam)
                 },
                 {
-                    "attribute_id": 2,
-                    "value_id": 10
+                    "attribute_id": 2, //id của thuộc tính(Ví dụ: id 2: Kích thước)
+                    "value_id": 10 //id của giá trị thuộc tính(Ví dụ: id 10: L)
                 }
             ]
         },
@@ -120,12 +120,12 @@
             "price": 469000,
             "attributes": [
                 {
-                    "attribute_id": 1,
-                    "value_id": 7
+                    "attribute_id": 1, //id của thuộc tính(Ví dụ: id 1: Màu sắc)
+                    "value_id": 7 //id của giá trị thuộc tính(Ví dụ: id 7: Cam)
                 },
                 {
-                    "attribute_id": 2,
-                    "value_id": 11
+                    "attribute_id": 2, //id của thuộc tính(Ví dụ: id 2: Kích thước)
+                    "value_id": 11 //id của giá trị thuộc tính(Ví dụ: id 11: XL)
                 }
             ]
         },
@@ -135,8 +135,8 @@
             "price": 469000,
             "attributes": [
                 {
-                    "attribute_id": 1,
-                    "value_id": 2
+                    "attribute_id": 1, //id của thuộc tính(Ví dụ: id 1: Màu sắc)
+                    "value_id": 2 //id của giá trị thuộc tính(Ví dụ: id 2: Đen)
                 },
                 {
                     "attribute_id": 2,
@@ -265,3 +265,5 @@
         }
     ]
 }
+
+

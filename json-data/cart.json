@@ -1,0 +1,5 @@
+{
+    "product_id": 3, //id của sản phẩm
+    "variant_id": 2, //id của biến thể
+    "quantity": 1 //số lượng
+}
