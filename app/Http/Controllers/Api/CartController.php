@@ -327,10 +327,16 @@ class CartController extends Controller
                 return response()->json(['message' => 'Your cart is empty'], 404);
             }
 
+            // Calculate total amount for guest order
+            $totalAmount = 0;
+            foreach ($cart as $cartItem) {
+                $totalAmount += $cartItem['price'] * $cartItem['quantity'];
+            }
+
             // Create a new order for the guest user
             $order = Order::create([
                 'user_id' => null, // Guest user
-                'total_amount' => array_sum(array_column($cart, 'price')),
+                'total_amount' => $totalAmount,
                 'status_id' => 2, // Assuming 2 is for confirmed
                 'shipping_method' => $request->shipping_method,
                 'payment' => $request->payment,

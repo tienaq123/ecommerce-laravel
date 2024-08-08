@@ -5,6 +5,8 @@ use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\BrandController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductVariantController;
 use App\Http\Controllers\Api\UserController;
@@ -32,6 +34,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/cart', [CartController::class, 'viewCart']);
     Route::delete('/cart/{itemId}', [CartController::class, 'removeFromCart']);
     Route::put('/cart/{itemId}', [CartController::class, 'updateCart']);
+    Route::delete('/cart', [CartController::class, 'clearCart']); // Clear Cart
+    Route::post('/cart/checkout', [CartController::class, 'checkout']); // Checkout
+
+    // order
+    Route::apiResource('order', OrderController::class);
+
+    // Payment
+    Route::post('/payment/create/{orderId}', [PaymentController::class, 'createPayment']);
+Route::get('/payment/return', [PaymentController::class, 'handleReturn']);
 });
 
 
