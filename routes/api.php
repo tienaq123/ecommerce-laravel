@@ -19,11 +19,15 @@ Route::post('login', [AuthController::class, 'login']);
 Route::post('forgetpassword', [AuthController::class, 'forgetPassword']);
 Route::post('resetpassword', [AuthController::class, 'resetPassword'])->name('password.reset');
 Route::get('resetpassword', [AuthController::class, 'getTokenResetPassword']);
+Route::get('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 // User
 Route::get('users', [UserController::class, 'index']);
+Route::get('user/{id}', [UserController::class, 'show']);
 Route::post('user/add', [UserController::class, 'store']);
 Route::put('user/update/{id}', [UserController::class, 'update']);
+Route::delete('user/delete/{id}', [UserController::class, 'destroy']);
+
 
 
 // Cart routes

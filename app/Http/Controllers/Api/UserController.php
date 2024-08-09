@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class UserController extends Controller
 {
@@ -16,6 +17,7 @@ class UserController extends Controller
     }
     public function index(Request $request)
     {
+
         $keyword = $request->keyword;
         $per_page = $request->per_page ?? 10;
 
@@ -51,6 +53,8 @@ class UserController extends Controller
         if (!$validation->fails()) {
             try {
                 $payload = $request->except('re_password');
+                $uploadedFileUrl = Cloudinary::upload($request->file('avatar')->getRealPath())->getSecurePath();
+                $payload['avatar'] = $uploadedFileUrl;
                 $user = User::create($payload);
                 return response()->json([
                     'status' => true,
@@ -60,8 +64,9 @@ class UserController extends Controller
             } catch (\Throwable $th) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Create user fail',
-                    'data' => []
+                    'message' => 'Create user false',
+                    'data' => [],
+                    'error' => $th->getMessage(),
                 ]);
             }
         } else {
@@ -75,24 +80,77 @@ class UserController extends Controller
 
     public function show(string $id)
     {
-        //
+        $user = User::find($id);
+        $orders = $user->orders()->get();
+        if ($orders) {
+            foreach ($orders as $orderItem) {
+                $orderItem->items = $orderItem->items()->get();
+            }
+        }
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User dosen\'t exist',
+                'data' => []
+            ], 404);
+        }
+        return response()->json([
+            'status' => true,
+            'message' => 'User get success',
+            'data' => [
+                'user' => $user,
+                'userOrder' => $orders
+            ]
+        ], 200);
     }
     public function update(Request $request, string $id)
     {
+
         $user = User::find($id);
         if (!empty($user)) {
-            $user->update($request->only(['name', 'email', 'password', 'address', 'date_of_birth']));
+            $validation = Validator::make(
+                $request->all(),
+                [
+                    'email' => 'required|email|unique:users,email,' . $user->id,
+                    'name' => 'required|string|max:255',
+                ],
+            );
+            if ($validation->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Validation error',
+                    'error' => $validation->errors(),
+                ], 422);
+            }
+            $user->update($request->all());
             return response()->json([
                 'status' => true,
                 'message' => 'Update user success',
+                'data' => $user,
             ], 200);
         } else {
-            return false;
+            return response()->json([
+                'status' => false,
+                'message' => 'User doesn\'t exit',
+                'data' => []
+            ], 404);
         }
     }
 
     public function destroy(string $id)
     {
-        //
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'messate' => 'User doesn\'t exits',
+                'data' => []
+            ], 404);
+        }
+        $user->delete();
+        return response()->json([
+            'status' => true,
+            'message' => 'User deleted successfuly'
+        ], 200);
     }
 }
