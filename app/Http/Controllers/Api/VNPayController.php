@@ -29,12 +29,7 @@ class VNPayController extends Controller
         $result = $this->vnpayService->handleReturn($request);
 
         if ($result['status']) {
-            // Cập nhật trạng thái đơn hàng
-            $order = Order::find($result['order_id']);
-            $order->status_id = 2; // Đã thanh toán
-            $order->save();
-
-            return response()->json(['message' => 'Payment success', 'order' => $order]);
+            return response()->json(['message' => 'Payment success', 'order_id' => $result['order_id']]);
         } else {
             return response()->json(['message' => 'Payment failed'], 400);
         }

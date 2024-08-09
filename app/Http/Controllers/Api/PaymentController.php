@@ -19,32 +19,17 @@ class PaymentController extends Controller
     public function createPayment(Request $request, $orderId)
     {
         $order = Order::findOrFail($orderId);
+        $vnpUrl = $this->vnpayService->createPaymentUrl($order);
 
-        // Kiểm tra loại cổng thanh toán
-        $paymentMethod = $request->input('payment_method');
-        if ($paymentMethod == 'vnpay') {
-            $paymentUrl = $this->vnpayService->createPaymentUrl($order);
-        } else {
-            return response()->json(['message' => 'Payment method not supported'], 400);
-        }
-
-        return response()->json(['url' => $paymentUrl]);
+        return response()->json(['url' => $vnpUrl['data']]);
     }
 
     public function handleReturn(Request $request)
     {
-        $paymentMethod = $request->input('vnp_TmnCode'); // Assuming the return URL contains a parameter to identify the payment method
-
-        if ($paymentMethod == env('VNPAY_TMN_CODE')) {
-            $result = $this->vnpayService->handleReturn($request);
-        } else {
-            return response()->json(['message' => 'Payment method not supported'], 400);
-        }
-
-        if ($result) {
-            // Cập nhật trạng thái đơn hàng
-            // ...
-            return response()->json(['message' => 'Payment success']);
+        $result = $this->vnpayService->handleReturn($request);
+        return $result;
+        if ($result['status']) {
+            return response()->json(['message' => 'Payment success', 'order_id' => $result['order_id']]);
         } else {
             return response()->json(['message' => 'Payment failed'], 400);
         }

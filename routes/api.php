@@ -42,8 +42,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Payment
     Route::post('/payment/create/{orderId}', [PaymentController::class, 'createPayment']);
-Route::get('/payment/return', [PaymentController::class, 'handleReturn']);
 });
+Route::get('/payment/return', [PaymentController::class, 'handleReturn']);
 
 
 
