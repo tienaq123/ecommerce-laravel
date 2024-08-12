@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Services\VNPayService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -295,88 +296,90 @@ class CartController extends Controller
             ], 422);
         }
 
+        // Lấy thông tin giỏ hàng
+        $cart = Auth::check() ? Order::where('user_id', Auth::id())->where('status_id', 1)->first() : session()->get('cart', []);
+
+        if (empty($cart)) {
+            return response()->json(['message' => 'Your cart is empty'], 404);
+        }
+
+        // Tính toán tổng số tiền
+        $totalAmount = 0;
         if (Auth::check()) {
-            $userId = Auth::id();
-            $order = Order::where('user_id', $userId)->where('status_id', 1)->first();
-
-            if (!$order) {
-                return response()->json(['message' => 'Your cart is empty'], 404);
+            foreach ($cart->items as $cartItem) {
+                $totalAmount += $cartItem->price * $cartItem->quantity;
             }
-
-            // Update order status to 'confirmed'
-            $order->status_id = 2; // Assuming 2 is for confirmed
-            $order->shipping_method = $request->shipping_method;
-            $order->payment = $request->payment;
-            $order->address_detail = $request->address_detail;
-            $order->ward = $request->ward;
-            $order->district = $request->district;
-            $order->city = $request->city;
-            $order->save();
-
-            // Clear the session cart if it exists
-            session()->forget('cart');
-
-            return response()->json([
-                'message' => 'Order has been placed successfully',
-                'order' => $order
-            ]);
         } else {
-            $cart = session()->get('cart', []);
-
-            if (empty($cart)) {
-                return response()->json(['message' => 'Your cart is empty'], 404);
-            }
-
-            // Calculate total amount for guest order
-            $totalAmount = 0;
             foreach ($cart as $cartItem) {
                 $totalAmount += $cartItem['price'] * $cartItem['quantity'];
             }
+        }
 
-            // Create a new order for the guest user
-            $order = Order::create([
-                'user_id' => null, // Guest user
+        // Tạo hoặc cập nhật đơn hàng
+        $order = Order::updateOrCreate(
+            [
+                'id' => $cart->id ?? null
+            ],
+            [
+                'user_id' => Auth::check() ? Auth::id() : null,
                 'total_amount' => $totalAmount,
-                'status_id' => 2, // Assuming 2 is for confirmed
+                'status_id' => $request->payment == 'online' ? 1 : 2, // Nếu thanh toán online thì trạng thái là "chờ thanh toán", nếu COD là "đã xác nhận"
                 'shipping_method' => $request->shipping_method,
                 'payment' => $request->payment,
                 'address_detail' => $request->address_detail,
                 'ward' => $request->ward,
                 'district' => $request->district,
                 'city' => $request->city,
-            ]);
+            ]
+        );
 
-            // Add items to the order
+        // Thêm các sản phẩm vào đơn hàng nếu người dùng chưa đăng nhập
+        if (!Auth::check()) {
             foreach ($cart as $cartItem) {
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $cartItem['product_id'],
-                    'variant_id' => $cartItem['variant_id'],
-                    'quantity' => $cartItem['quantity'],
-                    'price' => $cartItem['price'],
-                ]);
+                OrderItem::updateOrCreate(
+                    [
+                        'order_id' => $order->id,
+                        'product_id' => $cartItem['product_id'],
+                        'variant_id' => $cartItem['variant_id'],
+                    ],
+                    [
+                        'quantity' => $cartItem['quantity'],
+                        'price' => $cartItem['price'],
+                    ]
+                );
             }
 
-            // Save guest order details
-            GuestOrder::create([
-                'order_id' => $order->id,
-                'name' => $request->name,
-                'email' => $request->email,
-                'phone_number' => $request->phone_number,
-                'address_detail' => $request->address_detail,
-                'ward' => $request->ward,
-                'district' => $request->district,
-                'city' => $request->city,
-            ]);
-
-            // Clear the session cart
-            session()->forget('cart');
-
-            return response()->json([
-                'message' => 'Order has been placed successfully',
-                'order' => $order
-            ]);
+            // Lưu thông tin khách hàng nếu là khách hàng chưa đăng nhập
+            GuestOrder::updateOrCreate(
+                [
+                    'order_id' => $order->id,
+                ],
+                [
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'phone_number' => $request->phone_number,
+                    'address_detail' => $request->address_detail,
+                    'ward' => $request->ward,
+                    'district' => $request->district,
+                    'city' => $request->city,
+                ]
+            );
         }
+
+        // Nếu thanh toán là online, redirect tới VNPay
+        if ($request->payment == 'online') {
+            $vnpayService = new VNPayService();
+            $vnpUrl = $vnpayService->createPaymentUrl($order);
+            return response()->json(['url' => $vnpUrl['data']]);
+        }
+
+        // Nếu thanh toán là COD, xóa session cart
+        session()->forget('cart');
+
+        return response()->json([
+            'message' => 'Order has been placed successfully',
+            'order' => $order
+        ]);
     }
 
     private function getProductPrice($productId, $variantId = null)

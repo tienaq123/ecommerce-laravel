@@ -45,7 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('order', OrderController::class);
 
     // Payment
-    Route::post('/payment/create/{orderId}', [PaymentController::class, 'createPayment']);
+    // Route::post('/payment/create/{orderId}', [PaymentController::class, 'createPayment']);
 });
 Route::get('/payment/return', [PaymentController::class, 'handleReturn']);
 

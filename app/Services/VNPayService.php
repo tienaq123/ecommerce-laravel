@@ -15,7 +15,7 @@ class VNPayService
         $vnp_TmnCode = env('VNPAY_TMN_CODE'); //Mã website tại VNPAY
         $vnp_HashSecret =  env('VNPAY_HASH_SECRET'); //Chuỗi bí mật
 
-        $vnp_TxnRef =  9878; //Mã đơn hàng
+        $vnp_TxnRef =  $order->id; //Mã đơn hàng
         $vnp_OrderInfo = "Thanh toán hóa đơn cho đơn hàng " . $order->id; //nội dung thanh toán
         $vnp_OrderType = "billpayment";
         $vnp_Amount = $order->total_amount * 100;
@@ -83,7 +83,7 @@ class VNPayService
 
     public function handleReturn($request)
     {
-        $vnp_HashSecret =  env('VNPAY_HASH_SECRET'); // Chuỗi bí mật của bạn
+        $vnp_HashSecret =  env('VNPAY_HASH_SECRET');
         $inputData = $request->all();
 
         // Kiểm tra xem khóa 'vnp_SecureHash' có tồn tại hay không
@@ -115,7 +115,7 @@ class VNPayService
                 $orderId = $inputData['vnp_TxnRef'];
                 $order = Order::find($orderId);
                 if ($order) {
-                    $order->status_id = 2; // Đặt trạng thái đơn hàng là 'confirmed' hoặc trạng thái thành công khác
+                    $order->status_id = 2;
                     $order->save();
                 }
                 return ['status' => true, 'order_id' => $orderId];
