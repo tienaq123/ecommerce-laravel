@@ -56,6 +56,16 @@ class AuthController extends Controller
         }
     }
 
+    public function logout()
+    {
+        auth()->user()->tokens()->delete();
+        return response()->json([
+            'status' => true,
+            'message' => 'user logged out',
+            'data' => []
+        ], 200);
+    }
+
     public function forgetPassword(Request $request)
     {
 
