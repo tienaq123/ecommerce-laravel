@@ -105,7 +105,6 @@ class UserController extends Controller
     }
     public function update(Request $request, string $id)
     {
-
         $user = User::find($id);
         if (!empty($user)) {
             $validation = Validator::make(
@@ -122,7 +121,13 @@ class UserController extends Controller
                     'error' => $validation->errors(),
                 ], 422);
             }
-            $user->update($request->all());
+            $payload = $request->all();
+            if (!$request->avatar) {
+                $payload['avatar'] = $user->avatar;
+            } else {
+                $payload['avatar'] = Cloudinary::upload($request->file('avatar')->getRealPath())->getSecurePath();
+            }
+            $user->update($payload);
             return response()->json([
                 'status' => true,
                 'message' => 'Update user success',
@@ -152,5 +157,28 @@ class UserController extends Controller
             'status' => true,
             'message' => 'User deleted successfuly'
         ], 200);
+    }
+    public function updateStatus(Request $request, string $id)
+    {
+        $user = User::find($id);
+        if ($user) {
+            try {
+                $user->update($request->only('status'));
+                return response()->json([
+                    'status' => true,
+                    'message' => 'update status success',
+                ]);
+            } catch (\Throwable $th) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'update status false',
+                    'error' => $th->getMessage()
+                ]);
+            }
+        }
+        return response()->json([
+            'status' => false,
+            'message' => 'User doesn\'t exits'
+        ]);
     }
 }
