@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AttributeController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\BrandController;
@@ -63,3 +64,10 @@ Route::post('/categories/restore/{id}', [CategoryController::class, 'restore']);
 //products
 Route::apiResource('products', ProductController::class);
 Route::post('/product/restore/{id}', [ProductController::class, 'restore']);
+//Attribute
+Route::get('/attributes', [AttributeController::class, 'index']);
+Route::post('/attributes', [AttributeController::class, 'store']);
+Route::put('/attributes/{id}', [AttributeController::class, 'update']);
+Route::delete('/attributes/{id}', [AttributeController::class, 'destroy']);
+Route::delete('/attributes/{attributeId}/values/{valueId}', [AttributeController::class, 'destroyValue']);
+Route::patch('/attributes/{attributeId}/values/{valueId}/restore', [AttributeController::class, 'restoreValue']);
