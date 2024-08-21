@@ -46,10 +46,10 @@ Api
 -   GET:http://127.0.0.1:8000/api/products?sort_by=created_at ( Sắp xếp sản phẩm theo cột. created_at là sắp xếp từ mới đến cũ )
 
 <!-- Attribute -->
-GET:http://127.0.0.1:8000/api/attributes
-POST:http://127.0.0.1:8000/api/attributes
-PUT:http://127.0.0.1:8000/api/attributes/{id}
-DELETE:http://127.0.0.1:8000/api/attributes/{id}
+GET:http://127.0.0.1:8000/api/attributes (Get all)
+POST:http://127.0.0.1:8000/api/attributes (Add new)
+PUT:http://127.0.0.1:8000/api/attributes/{id} (Cập nhật)
+DELETE:http://127.0.0.1:8000/api/attributes/{id} (Xóa thuộc tính)
 DELETE:http://127.0.0.1:8000/api/attributes/{attributeId}/values/{valueId} (Xóa giá trị của thuộc tính, ví dụ xóa màu đỏ của thuộc tính màu sắc)
 PATCH:http://127.0.0.1:8000/api/attributes/{attributeId}/values/{valueId}/restore (Khôi phục lại giá trị đã xóa của thuộc tính)
 
