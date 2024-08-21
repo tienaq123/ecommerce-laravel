@@ -45,6 +45,14 @@ Api
 -   GET:http://127.0.0.1:8000/api/products?search=key ( Tìm kiếm sản phẩm có từ khóa 'key' )
 -   GET:http://127.0.0.1:8000/api/products?sort_by=created_at ( Sắp xếp sản phẩm theo cột. created_at là sắp xếp từ mới đến cũ )
 
+<!-- Attribute -->
+GET:http://127.0.0.1:8000/api/attributes
+POST:http://127.0.0.1:8000/api/attributes
+PUT:http://127.0.0.1:8000/api/attributes/{id}
+DELETE:http://127.0.0.1:8000/api/attributes/{id}
+DELETE:http://127.0.0.1:8000/api/attributes/{attributeId}/values/{valueId} (Xóa giá trị của thuộc tính, ví dụ xóa màu đỏ của thuộc tính màu sắc)
+PATCH:http://127.0.0.1:8000/api/attributes/{attributeId}/values/{valueId}/restore (Khôi phục lại giá trị đã xóa của thuộc tính)
+
 <!-- Cart -->
 
 -   POST:http://127.0.0.1:8000/api/cart/add
@@ -58,17 +66,21 @@ Api
 -   POST:http://127.0.0.1:8000/api/cart/checkout
     -   Lấy api address VietNam ở đây: https://esgoo.net/api-lay-thong-tin-tinh-thanh-quan-huyen-phuong-xa-viet-nam-bv5.htm
 
-User
+
+<!-- order -->
+ GET:http://127.0.0.1:8000/api/order
+
+<!-- User -->
 
 -   GET: http://127.0.0.1:8000/api/users?per_page=1&page=1&keyword (per_page số lượng bản ghi trên mỗi trang, page = 1 trang 1 page = 2 trang 2, keyword giá trị tìm kiếm)
 -   POST:http://127.0.0.1:8000/api/user/add (thêm mới người dùng)
 -   PUT: http://127.0.0.1:8000/api/user/update (cập nhật người dùng)
 
-Auth
+<!-- Auth -->
 POST: http://127.0.0.1:8000/api/register (đăng kí)
 POST: http://127.0.0.1:8000/api/login (đăng đăng)
 
-Resetpassword
+<!-- Resetpassword -->
 POST: http://127.0.0.1:8000/api/forgetpassword (Nhập email quên mật khẩu nhận mail)
 GET: http://127.0.0.1:8000/api/resetpassword (trả vể token)
 POST:http://127.0.0.1:8000/api/resetpassword (Nhập mật khẩu mới và nhập lại mật khẩu mới)

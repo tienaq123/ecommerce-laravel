@@ -88,7 +88,7 @@ class CartController extends Controller
             $order = Order::with(['items.product', 'items.variant'])->where('user_id', $userId)->where('status_id', 1)->first();
 
             if (!$order) {
-                return response()->json(['message' => 'Your cart is user empty'], 404);
+                return response()->json(['message' => 'Your cart is empty'], 200);
             }
 
             $cartDetails = [
