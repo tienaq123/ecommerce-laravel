@@ -10,11 +10,6 @@ use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class UserController extends Controller
 {
-
-    public function __construct()
-    {
-        $this->middleware(['role:admin', 'auth:sanctum']);
-    }
     public function index(Request $request)
     {
 

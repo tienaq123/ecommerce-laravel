@@ -25,12 +25,12 @@ Route::get('resetpassword', [AuthController::class, 'getTokenResetPassword']);
 Route::get('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 // User
-Route::get('users', [UserController::class, 'index']);
-Route::get('user/{id}', [UserController::class, 'show']);
-Route::post('user/add', [UserController::class, 'store']);
-Route::put('user/update/{id}', [UserController::class, 'update']);
-Route::delete('user/delete/{id}', [UserController::class, 'destroy']);
-Route::patch('user/updateStatus/{id}', [UserController::class, 'updateStatus']);
+Route::get('users', [UserController::class, 'index'])->middleware(['auth:sanctum', 'role:admin']);
+Route::get('user/{id}', [UserController::class, 'show'])->middleware(['auth:sanctum', 'role:admin']);
+Route::post('user/add', [UserController::class, 'store'])->middleware(['auth:sanctum', 'role:admin']);
+Route::put('user/update/{id}', [UserController::class, 'update'])->middleware(['auth:sanctum', 'role:user,admin']);
+Route::delete('user/delete/{id}', [UserController::class, 'destroy'])->middleware(['auth:sanctum', 'role:admin']);
+Route::patch('user/updateStatus/{id}', [UserController::class, 'updateStatus'])->middleware(['auth:sanctum', 'role:admin']);
 
 
 
