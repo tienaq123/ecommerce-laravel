@@ -68,7 +68,9 @@ PATCH:http://127.0.0.1:8000/api/attributes/{attributeId}/values/{valueId}/restor
 
 
 <!-- order -->
- GET:http://127.0.0.1:8000/api/order
+ GET:http://127.0.0.1:8000/api/order (get all admin)
+
+ GET:http://127.0.0.1:8000/api/list-order(get order user)
 
 <!-- User -->
 

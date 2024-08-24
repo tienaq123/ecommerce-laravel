@@ -147,6 +147,53 @@ class CartController extends Controller
         }
     }
 
+    public function viewOrder()
+    {
+        if (Auth::check()) {
+            $userId = Auth::id();
+            $orders = Order::with(['items.product', 'items.variant', 'status']) // Include status relationship
+                ->where('user_id', $userId)
+                ->where('status_id', '!=', 1) // Lấy các đơn hàng có trạng thái khác 1
+                ->get();
+
+            if ($orders->isEmpty()) {
+                return response()->json(['message' => 'You have no orders with status other than 1'], 200);
+            }
+
+            $orderDetails = $orders->map(function ($order) {
+                return [
+                    'id' => $order->id,
+                    'total_amount' => $order->total_amount,
+                    'status' => $order->status->name, // Get the status name
+                    'created_at' => $order->created_at,
+                    'items' => $order->items->map(function ($item) {
+                        return [
+                            'product_name' => $item->product->name,
+                            'quantity' => $item->quantity,
+                            'price' => $item->price,
+                            'total_price' => $item->quantity * $item->price,
+                            'image' => $item->product->productImages->first()->image_url ?? null,
+                            'variant' => $item->variant ? [
+                                'sku' => $item->variant->sku,
+                                'price' => $item->variant->price,
+                                'thumbnail' => $item->variant->thumbnail,
+                            ] : null,
+                        ];
+                    }),
+                ];
+            });
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Success',
+                'data' => $orderDetails
+            ]);
+        } else {
+            return response()->json(['message' => 'User not authenticated'], 401);
+        }
+    }
+
+
     public function updateCart(Request $request, $itemId)
     {
         $validator = Validator::make($request->all(), [
