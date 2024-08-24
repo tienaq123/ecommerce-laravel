@@ -46,7 +46,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // order
     Route::apiResource('order', OrderController::class);
+
+
     Route::get('/list-order', [CartController::class, 'viewOrder']);
+    Route::PUT('/update-status/{id}', [OrderController::class, 'updateStatus']);
     // Payment
     // Route::post('/payment/create/{orderId}', [PaymentController::class, 'createPayment']);
 

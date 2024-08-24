@@ -69,6 +69,10 @@ PATCH:http://127.0.0.1:8000/api/attributes/{attributeId}/values/{valueId}/restor
 
 <!-- order -->
  GET:http://127.0.0.1:8000/api/order (get all admin)
+ GET:http://127.0.0.1:8000/api/update-status(update order user. 
+ Truyền vào {
+  "status_id" từ 1->5 tương ứng với các trạng thái
+})
 
  GET:http://127.0.0.1:8000/api/list-order(get order user)
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
 {
@@ -87,9 +88,50 @@ class OrderController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function updateStatus(Request $request, $id)
     {
-        //
+        // Xác thực yêu cầu
+        $validator = Validator::make($request->all(), [
+            'status_id' => 'required|integer|between:1,5',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid status ID',
+                'errors' => $validator->errors(),
+            ], 400);
+        }
+
+        // Tìm đơn hàng theo ID
+        $order = Order::find($id);
+
+        if (!$order) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Order not found',
+            ], 404);
+        }
+
+        // Cập nhật trạng thái đơn hàng
+        $order->status_id = $request->input('status_id');
+        $order->save();
+
+        // Ghi lại lịch sử thay đổi trạng thái nếu cần
+        // OrderStatusHistory::create([
+        //     'order_id' => $order->id,
+        //     'status_id' => $order->status_id,
+        //     'changed_by' => Auth::id(),
+        // ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Order status updated successfully',
+            'data' => [
+                'order_id' => $order->id,
+                'new_status' => $order->status->name, // Hiển thị tên trạng thái mới
+            ]
+        ]);
     }
 
     /**
