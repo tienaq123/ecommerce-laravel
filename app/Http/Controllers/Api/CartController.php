@@ -431,6 +431,7 @@ class CartController extends Controller
         $validator = Validator::make($request->all(), [
             'shipping_method' => 'required|string|max:255',
             'payment' => 'required|string|max:255',
+            'paymentMethod' => 'max:255',
             'address_detail' => 'required|string|max:255',
             'ward' => 'required|string|max:255',
             'district' => 'required|string|max:255',
@@ -521,7 +522,8 @@ class CartController extends Controller
         // Nếu thanh toán là online, redirect tới VNPay
         if ($request->payment == 'online') {
             $vnpayService = new VNPayService();
-            $vnpUrl = $vnpayService->createPaymentUrl($order);
+            $paymentMethod = "$request->paymentMethod";
+            $vnpUrl = $vnpayService->createPaymentUrl($order, $paymentMethod);
             return response()->json(['url' => $vnpUrl['data']]);
         }
 

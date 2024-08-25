@@ -76,76 +76,6 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    // public function store(Request $request)
-    // {
-    //     // Validate sản phẩm và các biến thể
-    //     $validation = Validator::make(
-    //         $request->all(),
-    //         [
-    //             'name' => 'required|string|max:255',
-    //             'description' => 'nullable|string',
-    //             'price' => 'required|numeric',
-    //             'price_old' => 'nullable|numeric',
-    //             'quantity' => 'required|integer',
-    //             'category_id' => 'nullable|exists:categories,id',
-    //             'brand_id' => 'nullable|exists:brands,id',
-    //             'promotion' => 'nullable|string',
-    //             'status' => 'nullable|string',
-    //             'variants' => 'required|array',
-    //             'variants.*.sku' => 'required|string|max:50',
-    //             'variants.*.stock' => 'required|integer',
-    //             'variants.*.price' => 'nullable|numeric',
-    //             'variants.*.attributes' => 'required|array',
-    //             'variants.*.attributes.*.attribute_id' => 'required|exists:attributes,id',
-    //             'variants.*.attributes.*.value_id' => 'required|exists:attribute_values,id',
-    //             'images' => 'required|array',
-    //             'images.*.file' => 'required|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
-    //             'images.*.is_thumbnail' => 'nullable|boolean'
-    //         ]
-    //     );
-
-    //     if ($validation->fails()) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'ErrorValidated',
-    //             'data' => $validation->errors()
-    //         ], 422);
-    //     }
-
-    //     $product = Product::create($request->only(['name', 'description', 'price', 'price_old', 'quantity', 'category_id', 'brand_id', 'promotion', 'status']));
-
-    //     foreach ($request->variants as $variantData) {
-    //         $productVariant = $product->productVariants()->create([
-    //             'sku' => $variantData['sku'],
-    //             'stock' => $variantData['stock'],
-    //             'price' => $variantData['price'],
-    //             'thumbnail' => $variantData['thumbnail'] ?? null
-    //         ]);
-
-    //         foreach ($variantData['attributes'] as $attribute) {
-    //             $productVariant->variantAttributes()->create([
-    //                 'attribute_id' => $attribute['attribute_id'],
-    //                 'value_id' => $attribute['value_id']
-    //             ]);
-    //         }
-    //     }
-
-    //     foreach ($request->file('images') as $imageData) {
-    //         $path = $imageData['file']->store('product_images', 'public');
-
-    //         $product->productImages()->create([
-    //             'image_url' => $path,
-    //             'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
-    //         ]);
-    //     }
-
-    //     return response()->json([
-    //         'status' => true,
-    //         'message' => 'Success',
-    //         'data' => new ProductResource($product)
-    //     ], 200);
-    // }
-
     public function store(Request $request)
     {
         // Validate sản phẩm và các biến thể
@@ -169,7 +99,7 @@ class ProductController extends Controller
                 'variants.*.attributes.*.attribute_id' => 'required|exists:attributes,id',
                 'variants.*.attributes.*.value_id' => 'required|exists:attribute_values,id',
                 'images' => 'required|array',
-                'images.*.url' => 'required|string|url',
+                'images.*.file' => 'required|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
                 'images.*.is_thumbnail' => 'nullable|boolean'
             ]
         );
@@ -200,9 +130,11 @@ class ProductController extends Controller
             }
         }
 
-        foreach ($request->input('images') as $imageData) {
+        foreach ($request->file('images') as $imageData) {
+            $path = $imageData['file']->store('product_images', 'public');
+
             $product->productImages()->create([
-                'image_url' => $imageData['url'],
+                'image_url' => $path,
                 'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
             ]);
         }
@@ -213,6 +145,74 @@ class ProductController extends Controller
             'data' => new ProductResource($product)
         ], 200);
     }
+
+    // public function store(Request $request)
+    // {
+    //     // Validate sản phẩm và các biến thể
+    //     $validation = Validator::make(
+    //         $request->all(),
+    //         [
+    //             'name' => 'required|string|max:255',
+    //             'description' => 'nullable|string',
+    //             'price' => 'required|numeric',
+    //             'price_old' => 'nullable|numeric',
+    //             'quantity' => 'required|integer',
+    //             'category_id' => 'nullable|exists:categories,id',
+    //             'brand_id' => 'nullable|exists:brands,id',
+    //             'promotion' => 'nullable|string',
+    //             'status' => 'nullable|string',
+    //             'variants' => 'required|array',
+    //             'variants.*.sku' => 'required|string|max:50',
+    //             'variants.*.stock' => 'required|integer',
+    //             'variants.*.price' => 'nullable|numeric',
+    //             'variants.*.attributes' => 'required|array',
+    //             'variants.*.attributes.*.attribute_id' => 'required|exists:attributes,id',
+    //             'variants.*.attributes.*.value_id' => 'required|exists:attribute_values,id',
+    //             'images' => 'required|array',
+    //             'images.*.url' => 'required|string|url',
+    //             'images.*.is_thumbnail' => 'nullable|boolean'
+    //         ]
+    //     );
+
+    //     if ($validation->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'ErrorValidated',
+    //             'data' => $validation->errors()
+    //         ], 422);
+    //     }
+
+    //     $product = Product::create($request->only(['name', 'description', 'price', 'price_old', 'quantity', 'category_id', 'brand_id', 'promotion', 'status']));
+
+    //     foreach ($request->variants as $variantData) {
+    //         $productVariant = $product->productVariants()->create([
+    //             'sku' => $variantData['sku'],
+    //             'stock' => $variantData['stock'],
+    //             'price' => $variantData['price'],
+    //             'thumbnail' => $variantData['thumbnail'] ?? null
+    //         ]);
+
+    //         foreach ($variantData['attributes'] as $attribute) {
+    //             $productVariant->variantAttributes()->create([
+    //                 'attribute_id' => $attribute['attribute_id'],
+    //                 'value_id' => $attribute['value_id']
+    //             ]);
+    //         }
+    //     }
+
+    //     foreach ($request->input('images') as $imageData) {
+    //         $product->productImages()->create([
+    //             'image_url' => $imageData['url'],
+    //             'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
+    //         ]);
+    //     }
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Success',
+    //         'data' => new ProductResource($product)
+    //     ], 200);
+    // }
 
 
     /**
