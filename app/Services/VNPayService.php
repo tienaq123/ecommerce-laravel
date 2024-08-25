@@ -44,7 +44,7 @@ class VNPayService
         }
 
 
-        var_dump($vnp_BankCode);
+        // var_dump($vnp_BankCode);
         ksort($inputData);
         $query = "";
         $i = 0;
@@ -64,11 +64,11 @@ class VNPayService
             $vnpSecureHash =   hash_hmac('sha512', $hashdata, $vnp_HashSecret); //
             $vnp_Url .= 'vnp_SecureHash=' . $vnpSecureHash;
         }
-        $returnData = array(
+        $returnData = response()->json([
             'code' => $order->id,
             'message' => 'success',
-            'data' => $vnp_Url
-        );
+            'url' => $vnp_Url
+        ]);
 
         return $returnData;
         // if (isset($_POST['redirect'])) {

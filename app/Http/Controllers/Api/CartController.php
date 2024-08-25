@@ -533,7 +533,7 @@ class CartController extends Controller
                 $paymentMethod = "";
             }
             $vnpUrl = $vnpayService->createPaymentUrl($order, $paymentMethod);
-            return response()->json(['url' => $vnpUrl['data']]);
+            return $vnpUrl;
         }
 
         // Nếu thanh toán là COD, xóa session cart
