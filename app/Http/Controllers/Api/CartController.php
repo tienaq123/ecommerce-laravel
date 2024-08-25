@@ -163,9 +163,17 @@ class CartController extends Controller
             $orderDetails = $orders->map(function ($order) {
                 return [
                     'id' => $order->id,
+                    'user_id' => $order->user_id,
+                    'user_name' => $order->user->name,
                     'total_amount' => $order->total_amount,
+                    'payment' => $order->payment,
+                    'address_detail' => $order->address_detail,
+                    'ward' => $order->ward,
+                    'district' => $order->district,
+                    'city' => $order->city,
                     'status' => $order->status->name, // Get the status name
                     'created_at' => $order->created_at,
+                    'updated_at' => $order->updated_at,
                     'items' => $order->items->map(function ($item) {
                         return [
                             'product_name' => $item->product->name,
@@ -192,6 +200,67 @@ class CartController extends Controller
             return response()->json(['message' => 'User not authenticated'], 401);
         }
     }
+
+    public function detail($orderId)
+    {
+        // Lấy user hiện tại
+        $userId = Auth::id();
+
+        // Tìm đơn hàng dựa trên orderId và userId để đảm bảo người dùng chỉ có thể xem chi tiết đơn hàng của chính mình
+        $order = Order::with(['items.product.productImages', 'status'])
+            ->where('id', $orderId)
+            ->where('user_id', $userId)
+            ->first();
+
+        // Kiểm tra xem đơn hàng có tồn tại không
+        if (!$order) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Order not found or you do not have permission to view this order.'
+            ], 404);
+        }
+
+        // Lấy chi tiết đơn hàng
+        $orderDetail = [
+            'id' => $order->id,
+            'user_id' => $order->user_id,
+            'user_name' => $order->user->name,
+            'total_amount' => $order->total_amount,
+            'payment' => $order->payment,
+            'address_detail' => $order->address_detail,
+            'ward' => $order->ward,
+            'district' => $order->district,
+            'city' => $order->city,
+            'status_id' => $order->status_id,
+            'status' => $order->status->name,
+            'created_at' => $order->created_at,
+            'updated_at' => $order->updated_at,
+            'items' => $order->items->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'order_id' => $item->order_id,
+                    'product_id' => $item->product_id,
+                    'quantity' => $item->quantity,
+                    'price' => $item->price,
+                    'total_price' => $item->quantity * $item->price,
+                    'product' => [
+                        'id' => $item->product->id,
+                        'name' => $item->product->name,
+                        'description' => $item->product->description,
+                        'price' => $item->product->price,
+                        'image' => $item->product->productImages->first()->image_url ?? null, // Ảnh sản phẩm
+                    ],
+                ];
+            }),
+        ];
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Success',
+            'data' => $orderDetail
+        ]);
+    }
+
 
 
     public function updateCart(Request $request, $itemId)
@@ -258,6 +327,42 @@ class CartController extends Controller
 
             return response()->json(['message' => 'Cart updated successfully']);
         }
+    }
+
+    public function cancelOrder(Request $request, $orderId)
+    {
+        // Lấy user hiện tại
+        $userId = Auth::id();
+
+        // Tìm đơn hàng dựa trên orderId và userId để đảm bảo người dùng chỉ có thể hủy đơn hàng của chính mình
+        $order = Order::where('id', $orderId)
+            ->where('user_id', $userId)
+            ->first();
+
+        // Kiểm tra xem đơn hàng có tồn tại không
+        if (!$order) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Order not found or you do not have permission to cancel this order.'
+            ], 404);
+        }
+
+        // Kiểm tra xem trạng thái hiện tại của đơn hàng có cho phép hủy không
+        if ($order->status_id != 2) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Đơn hàng đã xác nhận không thể hủy'
+            ], 400);
+        }
+
+        // Cập nhật trạng thái đơn hàng thành 'Cancelled'
+        $order->status_id = 5; // 5 tương ứng với 'Cancelled'
+        $order->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Order has been successfully cancelled.'
+        ]);
     }
 
     public function removeFromCart($itemId)

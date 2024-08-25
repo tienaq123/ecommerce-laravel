@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
@@ -15,16 +16,24 @@ class OrderController extends Controller
     public function index()
     {
         $orders = Order::with(['items.product.productImages', 'status']) // Include the productImages relationship
-            ->where('status_id', 2) // Chỉ lấy đơn hàng đã xác nhận
+            ->where('status_id', '!=', 1) // Chỉ lấy đơn hàng đã xác nhận
             ->get();
 
         $orderDetails = $orders->map(function ($order) {
             return [
                 'id' => $order->id,
                 'user_id' => $order->user_id,
+                'user_name' => $order->user->name,
                 'total_amount' => $order->total_amount,
+                'payment' => $order->payment,
+                'address_detail' => $order->address_detail,
+                'ward' => $order->ward,
+                'district' => $order->district,
+                'city' => $order->city,
                 'status_id' => $order->status_id,
+                'status' => $order->status->name,
                 'created_at' => $order->created_at,
+                'updated_at' => $order->updated_at,
                 'items' => $order->items->map(function ($item) {
                     return [
                         'id' => $item->id,
@@ -116,13 +125,6 @@ class OrderController extends Controller
         // Cập nhật trạng thái đơn hàng
         $order->status_id = $request->input('status_id');
         $order->save();
-
-        // Ghi lại lịch sử thay đổi trạng thái nếu cần
-        // OrderStatusHistory::create([
-        //     'order_id' => $order->id,
-        //     'status_id' => $order->status_id,
-        //     'changed_by' => Auth::id(),
-        // ]);
 
         return response()->json([
             'status' => true,
