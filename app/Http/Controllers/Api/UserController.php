@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -98,6 +99,18 @@ class UserController extends Controller
             ]
         ], 200);
     }
+
+    public function profile()
+    {
+        $user = auth()->user();
+        return response()->json([
+            'status' => true,
+            'message' => 'profile information',
+            'data' => $user,
+            'id' => Auth::id()
+        ]);
+    }
+
     public function update(Request $request, string $id)
     {
         $user = User::find($id);
@@ -128,13 +141,12 @@ class UserController extends Controller
                 'message' => 'Update user success',
                 'data' => $user,
             ], 200);
-        } else {
-            return response()->json([
-                'status' => false,
-                'message' => 'User doesn\'t exit',
-                'data' => []
-            ], 404);
         }
+        return response()->json([
+            'status' => false,
+            'message' => 'User doesn\'t exit',
+            'data' => []
+        ], 404);
     }
 
     public function destroy(string $id)

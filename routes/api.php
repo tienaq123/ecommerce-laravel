@@ -6,12 +6,14 @@ use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\BrandController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductVariantController;
 use App\Http\Controllers\Api\UserController;
 use App\Models\Brand;
+use Doctrine\DBAL\Schema\Index;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -25,6 +27,7 @@ Route::get('resetpassword', [AuthController::class, 'getTokenResetPassword']);
 Route::get('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 // User
+Route::get('profile', [UserController::class, 'profile'])->middleware('auth:sanctum');
 Route::get('users', [UserController::class, 'index'])->middleware(['auth:sanctum', 'role:admin']);
 Route::get('user/{id}', [UserController::class, 'show'])->middleware(['auth:sanctum', 'role:admin']);
 Route::post('user/add', [UserController::class, 'store'])->middleware(['auth:sanctum', 'role:admin']);
@@ -33,7 +36,8 @@ Route::delete('user/delete/{id}', [UserController::class, 'destroy'])->middlewar
 Route::patch('user/updateStatus/{id}', [UserController::class, 'updateStatus'])->middleware(['auth:sanctum', 'role:admin']);
 
 
-
+//dashboard
+Route::middleware(['auth:sanctum', 'role:user'])->get('dashboard', [DashboardController::class, 'index']);
 
 // Cart routes
 Route::middleware('auth:sanctum')->group(function () {

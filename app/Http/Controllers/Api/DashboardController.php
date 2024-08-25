@@ -13,6 +13,8 @@ class DashboardController extends Controller
     }
     public function index()
     {
-        //
+        echo 134;
+        die();
     }
+    // public function 
 }
