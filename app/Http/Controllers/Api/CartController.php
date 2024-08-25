@@ -468,6 +468,7 @@ class CartController extends Controller
             }
         }
 
+        $payment = $request->payment;
         // Tạo hoặc cập nhật đơn hàng
         $order = Order::updateOrCreate(
             [
@@ -476,7 +477,7 @@ class CartController extends Controller
             [
                 'user_id' => Auth::check() ? Auth::id() : null,
                 'total_amount' => $totalAmount,
-                'status_id' => $request->payment == 'online' ? 1 : 2, // Nếu thanh toán online thì trạng thái là "chờ thanh toán", nếu COD là "đã xác nhận"
+                'status_id' => $payment !== 'COD' ? 1 : 2, // Nếu thanh toán online thì trạng thái là "chờ thanh toán", nếu COD là "đã xác nhận"
                 'shipping_method' => $request->shipping_method,
                 'payment' => $request->payment,
                 'address_detail' => $request->address_detail,
@@ -520,9 +521,17 @@ class CartController extends Controller
         }
 
         // Nếu thanh toán là online, redirect tới VNPay
-        if ($request->payment == 'online') {
+        if ($payment !== 'COD') {
             $vnpayService = new VNPayService();
-            $paymentMethod = "$request->paymentMethod";
+            if ($payment === 'online_qr') {
+                $paymentMethod = "VnMart";
+            } elseif ($payment === 'online_card') {
+                $paymentMethod = "VNBANK";
+            } elseif ($payment === 'online_visa') {
+                $paymentMethod = "INTCARD";
+            } else {
+                $paymentMethod = "";
+            }
             $vnpUrl = $vnpayService->createPaymentUrl($order, $paymentMethod);
             return response()->json(['url' => $vnpUrl['data']]);
         }

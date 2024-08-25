@@ -20,20 +20,7 @@ class VNPayService
         $vnp_Amount = $order->total_amount * 100;
         $vnp_Locale = "vn";
         $vnp_IpAddr = $_SERVER['REMOTE_ADDR'];
-        // $vnp_BankCode = "VNPAYQR";
-        if ($paymentMethod === '') {
-            $vnp_BankCode = "";
-        }elseif ($paymentMethod === 'qr') {
-            $vnp_BankCode = "VnMart"; // Hoặc truyền mã ngân hàng tương ứng nếu biết
-        }elseif ($paymentMethod === 'card') {
-            // Cài đặt mã ngân hàng nếu cần
-            $vnp_BankCode = "VNBANK"; // Hoặc truyền mã ngân hàng tương ứng nếu biết
-        } elseif ($paymentMethod === 'visa') {
-            // Cài đặt mã ngân hàng nếu cần
-            $vnp_BankCode = "INTCARD"; // Hoặc truyền mã ngân hàng tương ứng nếu biết
-        } else {
-            $vnp_BankCode = "";
-        }
+        $vnp_BankCode = $paymentMethod;
         $inputData = array(
             "vnp_Version" => "2.1.0",
             "vnp_TmnCode" => $vnp_TmnCode,
