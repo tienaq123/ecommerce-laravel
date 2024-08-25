@@ -75,6 +75,8 @@ PATCH:http://127.0.0.1:8000/api/attributes/{attributeId}/values/{valueId}/restor
 })
 
  GET:http://127.0.0.1:8000/api/list-order(get order user)
+ GET:http://127.0.0.1:8000/api/orders/{orderId}/detail(get order detail user)
+ GET:http://127.0.0.1:8000/api/orders/{orderId}/cancel(Hủy đơn order user)
 
 <!-- User -->
 
