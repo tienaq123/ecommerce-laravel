@@ -92,3 +92,15 @@ POST: http://127.0.0.1:8000/api/login (đăng đăng)
 POST: http://127.0.0.1:8000/api/forgetpassword (Nhập email quên mật khẩu nhận mail)
 GET: http://127.0.0.1:8000/api/resetpassword (trả vể token)
 POST:http://127.0.0.1:8000/api/resetpassword (Nhập mật khẩu mới và nhập lại mật khẩu mới)
+
+<!-- Dashboard -->
+productStock sản phẩm còn lại trong kho
+inventoryTotalValue tổng tiền của sản phẩm trong kho
+countSoldProducts số lượng sản phẩm đã bán
+
+countOrder số đơn đã được đặt
+sumOrder doanh thu
+countCompletedOrders số đơn đã hoàn thành
+countCancelledOrders số đơn đã hủy
+
+GET: http://127.0.0.1:8000/api/productByCategory/id (id là id của category)
