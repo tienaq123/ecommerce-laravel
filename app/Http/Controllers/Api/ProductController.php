@@ -93,6 +93,9 @@ class ProductController extends Controller
                 'brand_id' => 'nullable',
                 'promotion' => 'nullable|string',
                 'status' => 'nullable|string',
+                'images' => 'required|array',
+                'images.*.url' => 'string|url',
+                'images.*.is_thumbnail' => 'nullable|boolean'
             ]
         );
 
@@ -106,6 +109,12 @@ class ProductController extends Controller
 
         $product = Product::create($request->only(['name', 'description', 'price', 'price_old', 'quantity', 'category_id', 'brand_id', 'promotion', 'status']));
 
+        foreach ($request->input('images') as $imageData) {
+            $product->productImages()->create([
+                'image_url' => $imageData['url'],
+                'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
+            ]);
+        }
         return response()->json([
             'status' => true,
             'message' => 'Product created successfully',
