@@ -17,7 +17,6 @@ use Doctrine\DBAL\Schema\Index;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 
 // login
 Route::post('register', [AuthController::class, 'register']);
@@ -35,7 +34,7 @@ Route::post('user/add', [UserController::class, 'store']);
 Route::put('user/update/{id}', [UserController::class, 'update']);
 Route::delete('user/delete/{id}', [UserController::class, 'destroy']);
 Route::patch('user/updateStatus/{id}', [UserController::class, 'updateStatus']);
-
+Route::patch('user/changeRole/{id}', [UserController::class, 'changeRole']);
 
 //dashboard
 Route::get('dashboard', [DashboardController::class, 'index']);
