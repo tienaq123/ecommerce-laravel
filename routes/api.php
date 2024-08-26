@@ -70,9 +70,9 @@ Route::apiResource('brands', BrandController::class);
 Route::post('/categories/restore/{id}', [CategoryController::class, 'restore']);
 
 //products
-Route::post('products', [ProductController::class, 'store']);
+Route::apiResource('products', ProductController::class);
 // Route::post('products/{productId}/toggle-attribute', [ProductController::class, 'toggleProductAttribute']);
-Route::post('/products/{product}/variants', [ProductVariantController::class, 'updateVariants']);
+Route::post('/products/{product}/variants', [ProductController::class, 'updateVariants']);
 
 Route::post('products/{productId}/variants/{variantId}', [ProductController::class, 'updateProductVariant']);
 Route::post('/product/restore/{id}', [ProductController::class, 'restore']);

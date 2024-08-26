@@ -232,6 +232,8 @@ class ProductController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Product variants updated successfully',
+            'data' =>  $combinations,
+
         ], 200);
     }
 
@@ -244,7 +246,9 @@ class ProductController extends Controller
             $append = [];
             foreach ($combinations as $combination) {
                 foreach ($attribute['value_ids'] as $value_id) {
-                    $append[] = array_merge($combination, [['attribute_id' => $attribute['attribute_id'], 'value_id' => $value_id]]);
+                    $newCombination = $combination;
+                    $newCombination[] = ['attribute_id' => $attribute['attribute_id'], 'value_id' => $value_id];
+                    $append[] = $newCombination;
                 }
             }
             $combinations = $append;
@@ -252,6 +256,7 @@ class ProductController extends Controller
 
         return $combinations;
     }
+
 
     public function updateProductVariant(Request $request, $variantId)
     {
