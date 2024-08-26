@@ -222,25 +222,7 @@ class ProductController extends Controller
 
             $sku = 'SKU-' . implode('-', $skuParts);
 
-            // Kiểm tra biến thể đã tồn tại
-            $existingVariant = $product->productVariants()->whereHas('variantAttributes', function ($query) use ($combination) {
-                foreach ($combination as $attribute) {
-                    $query->where('attribute_id', $attribute['attribute_id'])
-                        ->where('value_id', $attribute['value_id']);
-                }
-            })->whereHas('variantAttributes', function ($query) use ($combination) {
-                $query->havingRaw('COUNT(*) = ?', [count($combination)]);
-            })->first();
 
-
-            if ($existingVariant) {
-                // Nếu tồn tại, cập nhật
-                $existingVariant->update([
-                    'stock' => $request->stock,
-                    'price' => $request->price,
-                    'sku' => $sku
-                ]);
-            } else {
                 // Nếu không tồn tại, tạo mới
                 $productVariant = $product->productVariants()->create([
                     'sku' => $sku,
@@ -254,7 +236,7 @@ class ProductController extends Controller
                         'value_id' => $attribute['value_id']
                     ]);
                 }
-            }
+
 
             // Lưu biến thể vào danh sách
             $variants[] = $sku;
