@@ -24,6 +24,7 @@ class OrderController extends Controller
                 'id' => $order->id,
                 'user_id' => $order->user_id,
                 'user_name' => $order->user->name,
+                'user_phone' => $order->user->phone_number,
                 'total_amount' => $order->total_amount,
                 'payment' => $order->payment,
                 'address_detail' => $order->address_detail,
