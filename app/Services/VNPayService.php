@@ -117,12 +117,15 @@ class VNPayService
                     $order->status_id = 2;
                     $order->save();
                 }
-                return ['status' => true, 'order_id' => $orderId];
+                // return ['status' => true, 'order_id' => $orderId];
+                return redirect('http://localhost:5173/checkout-done');
             } else {
-                return ['status' => false, 'message' => 'Payment failed'];
+                return redirect('http://localhost:5173/checkout-false');
+                // return ['status' => false, 'message' => 'Payment failed'];
             }
         } else {
-            return ['status' => false, 'message' => 'Invalid signature'];
+            return redirect('http://localhost:5173/checkout-false');
+            // return ['status' => false, 'message' => 'Invalid signature'];
         }
     }
 }

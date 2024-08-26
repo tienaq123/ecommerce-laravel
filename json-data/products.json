@@ -21,6 +21,10 @@
                 {
                     "attribute_id": 2,  //id của thuộc tính(Ví dụ: id 2: Kích thước)
                     "value_id": 8  //id của giá trị thuộc tính(Ví dụ: id 8: S)
+                },
+                {
+                    "attribute_id": 3,  //id của thuộc tính(Ví dụ: id 3: Chất liệu)
+                    "value_id": 14  //id của giá trị thuộc tính(Ví dụ: id 14: Lanh)
                 }
             ]
         },
