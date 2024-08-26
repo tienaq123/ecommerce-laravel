@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Products\ProductResource;
 use App\Http\Resources\Products\ProductVariantResource;
+use App\Models\AttributeValue;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductImage;
@@ -193,29 +194,47 @@ class ProductController extends Controller
             ], 404);
         }
 
-        // Lấy các tổ hợp của các giá trị thuộc tính
-        $combinations = $this->generateCombinations($request->attributes);
+        // Lấy các thuộc tính từ request
+        $attributes = $request->attribute;
+
+        // Khởi tạo danh sách biến thể
+        $variants = [];
+
+        // Tạo các tổ hợp biến thể
+        $combinations = $this->generateCombinations($attributes);
 
         foreach ($combinations as $combination) {
-            // Kiểm tra xem biến thể đã tồn tại chưa
+            $skuParts = [];
+
+            foreach ($combination as $attribute) {
+                $valueName = AttributeValue::where('id', $attribute['value_id'])->pluck('value')->first();
+                $skuParts[] = $valueName;
+            }
+
+            $sku = 'SKU-' . implode('-', $skuParts);
+
+            // Kiểm tra biến thể đã tồn tại
             $existingVariant = $product->productVariants()->whereHas('variantAttributes', function ($query) use ($combination) {
                 foreach ($combination as $attribute) {
                     $query->where('attribute_id', $attribute['attribute_id'])
                         ->where('value_id', $attribute['value_id']);
                 }
+            })->whereHas('variantAttributes', function ($query) use ($combination) {
+                $query->havingRaw('COUNT(*) = ?', [count($combination)]);
             })->first();
+
 
             if ($existingVariant) {
                 // Nếu tồn tại, cập nhật
                 $existingVariant->update([
                     'stock' => $request->stock,
                     'price' => $request->price,
-                    'sku' => $request->sku
+                    'sku' => $sku
                 ]);
             } else {
                 // Nếu không tồn tại, tạo mới
                 $productVariant = $product->productVariants()->create([
-                    'sku' => $request->sku,
+                    'sku' => $sku,
                     'stock' => $request->stock,
                     'price' => $request->price
                 ]);
@@ -227,74 +246,86 @@ class ProductController extends Controller
                     ]);
                 }
             }
+
+            // Lưu biến thể vào danh sách
+            $variants[] = $sku;
         }
 
         return response()->json([
             'status' => true,
             'message' => 'Product variants updated successfully',
-            'data' =>  $combinations,
-
+            'variants' => $variants,
         ], 200);
     }
 
-    // Hàm tạo tổ hợp
+    // Hàm tạo tổ hợp đơn giản
     private function generateCombinations($attributes)
     {
         $combinations = [[]];
 
         foreach ($attributes as $attribute) {
-            $append = [];
+            $newCombinations = [];
             foreach ($combinations as $combination) {
                 foreach ($attribute['value_ids'] as $value_id) {
-                    $newCombination = $combination;
-                    $newCombination[] = ['attribute_id' => $attribute['attribute_id'], 'value_id' => $value_id];
-                    $append[] = $newCombination;
+                    $newCombinations[] = array_merge($combination, [['attribute_id' => $attribute['attribute_id'], 'value_id' => $value_id]]);
                 }
             }
-            $combinations = $append;
+            $combinations = $newCombinations;
         }
 
         return $combinations;
     }
 
 
-    public function updateProductVariant(Request $request, $variantId)
+
+    public function updateMultipleVariants(Request $request)
     {
-        $validation = Validator::make(
-            $request->all(),
-            [
-                'sku' => 'required|string|max:50',
-                'stock' => 'required|integer',
-                'price' => 'nullable|numeric',
-            ]
-        );
+        // Lấy danh sách các biến thể từ request
+        $variants = $request->input('variants');
 
-        if ($validation->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Validation Error',
-                'data' => $validation->errors()
-            ], 422);
+        foreach ($variants as $variantData) {
+            // Tìm biến thể theo ID
+            $variant = ProductVariant::find($variantData['id']);
+
+            if ($variant) {
+                // Cập nhật thông tin biến thể
+                $variant->update([
+                    'price' => $variantData['price'] ?? $variant->price,
+                    'stock' => $variantData['stock'] ?? $variant->stock,
+                    'thumbnail' => $variantData['thumbnail'] ?? $variant->thumbnail,
+                ]);
+            }
         }
-
-        $productVariant = ProductVariant::find($variantId);
-
-        if (!$productVariant) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Product Variant not found',
-                'data' => null
-            ], 404);
-        }
-
-        $productVariant->update($request->only(['sku', 'stock', 'price']));
 
         return response()->json([
             'status' => true,
-            'message' => 'Product variant updated successfully',
-            'data' => new ProductVariantResource($productVariant)
+            'message' => 'Product variants updated successfully',
         ], 200);
     }
+
+    public function deleteVariant($id)
+    {
+        // Tìm biến thể theo ID
+        $variant = ProductVariant::find($id);
+
+        if (!$variant) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Product variant not found',
+            ], 404);
+        }
+
+        // Xóa biến thể
+        $variant->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Product variant deleted successfully',
+        ], 200);
+    }
+
+
+
 
 
 
