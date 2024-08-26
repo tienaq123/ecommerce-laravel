@@ -188,4 +188,15 @@ class UserController extends Controller
             'message' => 'User doesn\'t exits'
         ]);
     }
+
+    public function changeRole($id)
+    {
+        $user = User::find($id);
+        if ($user) {
+            $role = $user->role == 'admin' ? 'user' : 'admin';
+            $user->role = $role;
+            $user->save();
+        }
+        return $user;
+    }
 }
