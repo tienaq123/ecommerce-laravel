@@ -73,11 +73,19 @@ Route::post('/categories/restore/{id}', [CategoryController::class, 'restore']);
 
 //products
 Route::apiResource('products', ProductController::class);
+// Route::post('products/{productId}/toggle-attribute', [ProductController::class, 'toggleProductAttribute']);
+Route::post('/products/{product}/variants', [ProductController::class, 'updateVariants']);
+
+Route::post('products/{productId}/variants/{variantId}', [ProductController::class, 'updateProductVariant']);
+Route::put('/products/variants/update-multiple', [ProductController::class, 'updateMultipleVariants']);
+Route::delete('/products/variants/{id}', [ProductController::class, 'deleteVariant']);
+
 Route::post('/product/restore/{id}', [ProductController::class, 'restore']);
+
 //Attribute
 Route::get('/attributes', [AttributeController::class, 'index']);
 Route::post('/attributes', [AttributeController::class, 'store']);
 Route::put('/attributes/{id}', [AttributeController::class, 'update']);
 Route::delete('/attributes/{id}', [AttributeController::class, 'destroy']);
-Route::delete('/attributes/{attributeId}/values/{valueId}', [AttributeController::class, 'destroyValue']);
+// Route::delete('/attributes/{attributeId}/values/{valueId}', [AttributeController::class, 'destroyValue']);
 Route::patch('/attributes/{attributeId}/values/{valueId}/restore', [AttributeController::class, 'restoreValue']);
