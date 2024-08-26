@@ -104,3 +104,97 @@ countCompletedOrders số đơn đã hoàn thành
 countCancelledOrders số đơn đã hủy
 
 GET: http://127.0.0.1:8000/api/productByCategory/id (id là id của category)
+
+
+<!----------------------- Biến thể ---------------------------->
+
+<!-- Api thứ nhất để lưu các thông tin cơ bản của sản phẩm -->
+- POST: http://127.0.0.1:8000/api/products
+    data mẫu:
+     {
+    "name": "Áo thun nam ",
+    "description": "Áo thun nam chất liệu cotton, mềm mại và thoải mái.",
+    "price": 200000,
+    "price_old": 250000,
+    "quantity": 100,
+    "category_id": 53,
+    "brand_id": null,
+    "promotion": "Giảm giá 10%",
+    "status": "active"
+   }
+
+   + Khi api được thực hiện nó sẽ lưu thông tin sản phẩm và trả ra cục data như sau:
+   {
+    "status": true,
+    "message": "Product created successfully",
+    "data": {
+        "id": 15,
+        "name": "Áo thun nam àdfhsdifhsduiguisdfgh",
+        "description": "Áo thun nam chất liệu cotton, mềm mại và thoải mái.",
+        "price": 200000,
+        "price_old": 250000,
+        "quantity": 100,
+        "view": null,
+        "category_id": 53,
+        "brand_id": null,
+        "promotion": "Giảm giá 10%",
+        "status": "active",
+        "created_at": "2024-08-26T17:10:11.000000Z",
+        "updated_at": "2024-08-26T17:10:11.000000Z"
+            }
+    }
+    + Dựa vào nó để show ra bảng để điền các thuộc tính.
+
+    Khi chọn các attribute ví dụ như màu sắc, size thì show ra các value bên dưới, các value ấy sẽ là checkbox và value checkbox chính là thằng value_id ấy. Khi đã chọn thành công click button tạo thuộc tính.
+    Button ấy sẽ lấy id của các thuộc tính mình vừa chọn và gọi đến api
+- POST: http://127.0.0.1:8000/api/products/{productId}/variants
+    + api đó sẽ lấy các giá trị bên dưới và truyền vào các value_id:
+    {
+    "product_id": 14,  // ID của sản phẩm vừa tạo
+    "attribute": [
+        {
+            "attribute_id": 1,  // Ví dụ: Màu sắc
+            "value_ids": [1,2, 3]  // Ví dụ: Đỏ (1), Xanh (2), Tím (3)
+        },
+        {
+            "attribute_id": 2,  // Ví dụ: Kích thước
+            "value_ids": [8, 9, 10]  // Ví dụ: S (8), M (9), L (10)
+        },
+        {
+            "attribute_id": 3, // Ví dụ: Chất liệu
+            "value_ids": [14, 15, 16] 
+        }
+                    ],
+        "stock": 10,
+        "price": 500000
+    }
+
+    + Sau khi api được gọi thành công trả về true thì get lại product bằng api 
+- GET:http://127.0.0.1:8000/api/products/{idProduct}(idProduct mình sẽ lấy id của thằng product mình vừa tạo ấy)
+
+    + get xong được api đấy nó cho cục chi tiết sản phẩm với 1 đống biến thể, show nó ra cái bảng bên phải rồi mình điền ảnh, giá, số lượng.
+    + Điền xong gọi api
+- http://127.0.0.1:8000/api/products/variants/update-multiple
+    + Nó sẽ cần các thông tin mình nhập ví dụ như
+    {
+    "variants": [
+        {
+            "id": 183,(Đây là id của thằng productVariants)
+            "price": 350000, (giá tùy ý)
+            "stock": 3,(số lượng)
+            "thumbnail": "new-image-url-1.jpg" (ảnh)
+        },
+        {
+            "id": 184,
+            "price": 400000,
+            "stock": 4,
+            "thumbnail": "new-image-url-2.jpg"
+        },
+        {
+            "id": 185,
+            "price": 550000,
+            "stock": 5,
+            "thumbnail": "new-image-url-3.jpg"
+        },
+    ]
+}
