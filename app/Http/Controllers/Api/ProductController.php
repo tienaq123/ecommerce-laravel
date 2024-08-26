@@ -423,7 +423,7 @@ class ProductController extends Controller
                 'data' => null
             ], 404);
         }
-
+        $product->increment('view');
         return response()->json([
             'status' => true,
             'message' => 'Success get product details',
