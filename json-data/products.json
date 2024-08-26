@@ -4,7 +4,7 @@
     "price": 469000, //giá
     "price_old": 600000, //giá cũ
     "quantity": 20, //số lượng
-    "category_id":51, //id của danh mục
+    "category_id": 51, //id của danh mục
     "brand_id": null, //id của thương hiệu
     "promotion": "Giảm giá đặc biệt", //khuyến mãi
     "status": "Active", //trạng thái
@@ -15,16 +15,21 @@
             "price": 469000, //giá của biến thế
             "attributes": [
                 {
-                    "attribute_id": 1,  //id của thuộc tính(Ví dụ: id 1: Màu sắc)
-                    "value_id": 6   //id của giá trị thuộc tính(Ví dụ: id 6: Nâu)
+                    "attribute_id": 1, //id của thuộc tính(Ví dụ: id 1: Màu sắc)
+                    "value_id": 6 //id của giá trị thuộc tính(Ví dụ: id 6: Nâu)
                 },
                 {
+<<<<<<< HEAD
                     "attribute_id": 2,  //id của thuộc tính(Ví dụ: id 2: Kích thước)
                     "value_id": 8  //id của giá trị thuộc tính(Ví dụ: id 8: S)
                 },
                 {
                     "attribute_id": 3,  //id của thuộc tính(Ví dụ: id 3: Chất liệu)
                     "value_id": 14  //id của giá trị thuộc tính(Ví dụ: id 14: Lanh)
+=======
+                    "attribute_id": 2, //id của thuộc tính(Ví dụ: id 2: Kích thước)
+                    "value_id": 8 //id của giá trị thuộc tính(Ví dụ: id 8: S)
+>>>>>>> 0d8c66c (update)
                 }
             ]
         },
@@ -53,7 +58,7 @@
                     "value_id": 6 //id của giá trị thuộc tính(Ví dụ: id 6: Nâu)
                 },
                 {
-                    "attribute_id": 2,//id của thuộc tính(Ví dụ: id 2: Kích thước)
+                    "attribute_id": 2, //id của thuộc tính(Ví dụ: id 2: Kích thước)
                     "value_id": 10 //id của giá trị thuộc tính(Ví dụ: id 10: L)
                 }
             ]
@@ -83,8 +88,8 @@
                     "value_id": 7 //id của giá trị thuộc tính(Ví dụ: id 7: Cam)
                 },
                 {
-                    "attribute_id": 2,  //id của thuộc tính(Ví dụ: id 2: Kích thước)
-                    "value_id": 8  //id của giá trị thuộc tính(Ví dụ: id 8: S)
+                    "attribute_id": 2, //id của thuộc tính(Ví dụ: id 2: Kích thước)
+                    "value_id": 8 //id của giá trị thuộc tính(Ví dụ: id 8: S)
                 }
             ]
         },
@@ -269,5 +274,3 @@
         }
     ]
 }
-
-
