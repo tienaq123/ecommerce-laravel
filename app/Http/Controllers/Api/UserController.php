@@ -49,8 +49,9 @@ class UserController extends Controller
         if (!$validation->fails()) {
             try {
                 $payload = $request->except('re_password');
-                $uploadedFileUrl = Cloudinary::upload($request->file('avatar')->getRealPath())->getSecurePath();
-                $payload['avatar'] = $uploadedFileUrl;
+                if ($request->avatar) {
+                    $payload['avatar']  = Cloudinary::upload($request->file('avatar')->getRealPath())->getSecurePath();
+                }
                 $user = User::create($payload);
                 return response()->json([
                     'status' => true,
