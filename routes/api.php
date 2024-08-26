@@ -17,6 +17,7 @@ use Doctrine\DBAL\Schema\Index;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 
 // login
 Route::post('register', [AuthController::class, 'register']);
@@ -37,7 +38,8 @@ Route::patch('user/updateStatus/{id}', [UserController::class, 'updateStatus'])-
 
 
 //dashboard
-Route::middleware(['auth:sanctum', 'role:user'])->get('dashboard', [DashboardController::class, 'index']);
+Route::middleware(['auth:sanctum', 'role:admin'])->get('dashboard', [DashboardController::class, 'index']);
+Route::get('productByCategory/{id}', [DashboardController::class, 'getProductByCategoryId']);
 
 // Cart routes
 Route::middleware('auth:sanctum')->group(function () {

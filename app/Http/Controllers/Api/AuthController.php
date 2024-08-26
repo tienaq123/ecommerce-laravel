@@ -134,10 +134,7 @@ class AuthController extends Controller
     public function getTokenResetPassword(Request $request)
     {
         if ($request->has('token')) {
-            return response()->json([
-                'status' => true,
-                'token' => $request->token
-            ], 200);
+            return redirect()->to('http://localhost:5173/resetPassword?token=' . $request->token . '&email=' . $request->email);
         } else {
             return response()->json([
                 'status' => false,
