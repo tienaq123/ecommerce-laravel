@@ -334,6 +334,72 @@ class ProductController extends Controller
     }
 
 
+    public function updateProductAndVariants(Request $request, $id)
+    {
+        // Tìm sản phẩm theo ID
+        $product = Product::find($id);
+
+        if (!$product) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Product not found',
+            ], 404);
+        }
+
+        // Cập nhật thông tin sản phẩm
+        $product->update([
+            'name' => $request->name,
+            'description' => $request->description,
+            'price' => $request->price,
+            'price_old' => $request->price_old,
+            'quantity' => $request->quantity,
+            'category_id' => $request->category_id,
+            'brand_id' => $request->brand_id,
+            'promotion' => $request->promotion,
+            'status' => $request->status,
+        ]);
+
+        // Lấy các biến thể hiện tại của sản phẩm
+        $existingVariantIds = $product->productVariants->pluck('id')->toArray();
+
+        // Cập nhật hoặc thêm mới các biến thể
+        foreach ($request->variants as $variantData) {
+            // Kiểm tra biến thể đã tồn tại chưa (dựa trên SKU hoặc thuộc tính)
+            $variant = ProductVariant::find($variantData['id']) ?? new ProductVariant;
+
+            $variant->product_id = $product->id;
+            $variant->sku = $variantData['sku'];
+            $variant->stock = $variantData['stock'];
+            $variant->price = $variantData['price'];
+            $variant->save();
+
+            // Xóa các thuộc tính cũ của biến thể và thêm mới
+            $variant->variantAttributes()->delete();
+            foreach ($variantData['attributes'] as $attribute) {
+                $variant->variantAttributes()->create([
+                    'attribute_id' => $attribute['attribute_id'],
+                    'value_id' => $attribute['value_id']
+                ]);
+            }
+
+            // Loại bỏ biến thể này khỏi danh sách biến thể cần xóa
+            if (isset($variantData['id'])) {
+                $existingVariantIds = array_diff($existingVariantIds, [$variantData['id']]);
+            }
+        }
+
+        // Xóa các biến thể không còn tồn tại trong yêu cầu
+        ProductVariant::destroy($existingVariantIds);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Product and variants updated successfully',
+            'data' => $product->load('productVariants.variantAttributes.attribute'),
+        ], 200);
+    }
+
+
+
 
 
 
@@ -434,127 +500,127 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
-    {
-        $validation = Validator::make(
-            $request->all(),
-            [
-                'name' => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'price' => 'required|numeric',
-                'price_old' => 'nullable|numeric',
-                'quantity' => 'required|integer',
-                'category_id' => 'nullable|exists:categories,id',
-                'brand_id' => 'nullable|exists:brands,id',
-                'promotion' => 'nullable|string',
-                'status' => 'nullable|string',
-                'variants' => 'sometimes|array',
-                'variants.*.id' => 'sometimes|exists:product_variants,id',
-                'variants.*.sku' => 'required|string|max:50',
-                'variants.*.stock' => 'required|integer',
-                'variants.*.price' => 'nullable|numeric',
-                'variants.*.attributes' => 'required|array',
-                'variants.*.attributes.*.attribute_id' => 'required|exists:attributes,id',
-                'variants.*.attributes.*.value_id' => 'required|exists:attribute_values,id',
-                'images' => 'sometimes|array',
-                'images.*.id' => 'sometimes|exists:product_images,id',
-                'images.*.file' => 'sometimes|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
-                'images.*.is_thumbnail' => 'nullable|boolean'
-            ]
-        );
+    // public function update(Request $request, string $id)
+    // {
+    //     $validation = Validator::make(
+    //         $request->all(),
+    //         [
+    //             'name' => 'required|string|max:255',
+    //             'description' => 'nullable|string',
+    //             'price' => 'required|numeric',
+    //             'price_old' => 'nullable|numeric',
+    //             'quantity' => 'required|integer',
+    //             'category_id' => 'nullable|exists:categories,id',
+    //             'brand_id' => 'nullable|exists:brands,id',
+    //             'promotion' => 'nullable|string',
+    //             'status' => 'nullable|string',
+    //             'variants' => 'sometimes|array',
+    //             'variants.*.id' => 'sometimes|exists:product_variants,id',
+    //             'variants.*.sku' => 'required|string|max:50',
+    //             'variants.*.stock' => 'required|integer',
+    //             'variants.*.price' => 'nullable|numeric',
+    //             'variants.*.attributes' => 'required|array',
+    //             'variants.*.attributes.*.attribute_id' => 'required|exists:attributes,id',
+    //             'variants.*.attributes.*.value_id' => 'required|exists:attribute_values,id',
+    //             'images' => 'sometimes|array',
+    //             'images.*.id' => 'sometimes|exists:product_images,id',
+    //             'images.*.file' => 'sometimes|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
+    //             'images.*.is_thumbnail' => 'nullable|boolean'
+    //         ]
+    //     );
 
-        if ($validation->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'ErrorValidated',
-                'data' => $validation->errors()
-            ], 422);
-        }
+    //     if ($validation->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'ErrorValidated',
+    //             'data' => $validation->errors()
+    //         ], 422);
+    //     }
 
-        $product = Product::find($id);
+    //     $product = Product::find($id);
 
-        if (!$product) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Product not found',
-                'data' => null
-            ], 404);
-        }
+    //     if (!$product) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Product not found',
+    //             'data' => null
+    //         ], 404);
+    //     }
 
-        $product->update($request->only(['name', 'description', 'price', 'price_old', 'quantity', 'category_id', 'brand_id', 'promotion', 'status']));
+    //     $product->update($request->only(['name', 'description', 'price', 'price_old', 'quantity', 'category_id', 'brand_id', 'promotion', 'status']));
 
-        if ($request->has('variants')) {
-            foreach ($request->variants as $variantData) {
-                if (isset($variantData['id'])) {
-                    $productVariant = ProductVariant::find($variantData['id']);
-                    if ($productVariant) {
-                        $productVariant->update([
-                            'sku' => $variantData['sku'],
-                            'stock' => $variantData['stock'],
-                            'price' => $variantData['price'],
-                            'thumbnail' => $variantData['thumbnail'] ?? null
-                        ]);
+    //     if ($request->has('variants')) {
+    //         foreach ($request->variants as $variantData) {
+    //             if (isset($variantData['id'])) {
+    //                 $productVariant = ProductVariant::find($variantData['id']);
+    //                 if ($productVariant) {
+    //                     $productVariant->update([
+    //                         'sku' => $variantData['sku'],
+    //                         'stock' => $variantData['stock'],
+    //                         'price' => $variantData['price'],
+    //                         'thumbnail' => $variantData['thumbnail'] ?? null
+    //                     ]);
 
-                        $productVariant->variantAttributes()->delete();
-                        foreach ($variantData['attributes'] as $attribute) {
-                            $productVariant->variantAttributes()->create([
-                                'attribute_id' => $attribute['attribute_id'],
-                                'value_id' => $attribute['value_id']
-                            ]);
-                        }
-                    }
-                } else {
-                    $productVariant = $product->productVariants()->create([
-                        'sku' => $variantData['sku'],
-                        'stock' => $variantData['stock'],
-                        'price' => $variantData['price'],
-                        'thumbnail' => $variantData['thumbnail'] ?? null
-                    ]);
+    //                     $productVariant->variantAttributes()->delete();
+    //                     foreach ($variantData['attributes'] as $attribute) {
+    //                         $productVariant->variantAttributes()->create([
+    //                             'attribute_id' => $attribute['attribute_id'],
+    //                             'value_id' => $attribute['value_id']
+    //                         ]);
+    //                     }
+    //                 }
+    //             } else {
+    //                 $productVariant = $product->productVariants()->create([
+    //                     'sku' => $variantData['sku'],
+    //                     'stock' => $variantData['stock'],
+    //                     'price' => $variantData['price'],
+    //                     'thumbnail' => $variantData['thumbnail'] ?? null
+    //                 ]);
 
-                    foreach ($variantData['attributes'] as $attribute) {
-                        $productVariant->variantAttributes()->create([
-                            'attribute_id' => $attribute['attribute_id'],
-                            'value_id' => $attribute['value_id']
-                        ]);
-                    }
-                }
-            }
-        }
+    //                 foreach ($variantData['attributes'] as $attribute) {
+    //                     $productVariant->variantAttributes()->create([
+    //                         'attribute_id' => $attribute['attribute_id'],
+    //                         'value_id' => $attribute['value_id']
+    //                     ]);
+    //                 }
+    //             }
+    //         }
+    //     }
 
-        if ($request->has('images')) {
-            foreach ($request->images as $imageData) {
-                if (isset($imageData['id'])) {
-                    $productImage = ProductImage::find($imageData['id']);
-                    if ($productImage) {
-                        if (isset($imageData['file'])) {
-                            Storage::disk('public')->delete($productImage->image_url);
-                            $path = $imageData['file']->store('product_images', 'public');
-                            $productImage->update([
-                                'image_url' => $path,
-                                'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
-                            ]);
-                        } else {
-                            $productImage->update([
-                                'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
-                            ]);
-                        }
-                    }
-                } else {
-                    $path = $imageData['file']->store('product_images', 'public');
-                    $product->productImages()->create([
-                        'image_url' => $path,
-                        'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
-                    ]);
-                }
-            }
-        }
+    //     if ($request->has('images')) {
+    //         foreach ($request->images as $imageData) {
+    //             if (isset($imageData['id'])) {
+    //                 $productImage = ProductImage::find($imageData['id']);
+    //                 if ($productImage) {
+    //                     if (isset($imageData['file'])) {
+    //                         Storage::disk('public')->delete($productImage->image_url);
+    //                         $path = $imageData['file']->store('product_images', 'public');
+    //                         $productImage->update([
+    //                             'image_url' => $path,
+    //                             'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
+    //                         ]);
+    //                     } else {
+    //                         $productImage->update([
+    //                             'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
+    //                         ]);
+    //                     }
+    //                 }
+    //             } else {
+    //                 $path = $imageData['file']->store('product_images', 'public');
+    //                 $product->productImages()->create([
+    //                     'image_url' => $path,
+    //                     'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
+    //                 ]);
+    //             }
+    //         }
+    //     }
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Product updated successfully',
-            'data' => new ProductResource($product)
-        ], 200);
-    }
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Product updated successfully',
+    //         'data' => new ProductResource($product)
+    //     ], 200);
+    // }
 
 
     /**
