@@ -348,11 +348,22 @@ class CartController extends Controller
         }
 
         // Kiểm tra xem trạng thái hiện tại của đơn hàng có cho phép hủy không
-        if ($order->status_id != 2) {
+        if ($order->status_id != 2) { // Chỉ cho phép hủy nếu trạng thái đơn hàng là 'Confirmed'
             return response()->json([
                 'status' => false,
                 'message' => 'Đơn hàng đã xác nhận không thể hủy'
             ], 400);
+        }
+
+        // Lặp qua các sản phẩm trong đơn hàng và hoàn lại số lượng vào kho
+        foreach ($order->orderItems as $orderItem) {
+            $variant = ProductVariant::find($orderItem->variant_id);
+
+            if ($variant) {
+                // Tăng số lượng tồn kho của biến thể sản phẩm
+                $variant->stock += $orderItem->quantity;
+                $variant->save();
+            }
         }
 
         // Cập nhật trạng thái đơn hàng thành 'Cancelled'
@@ -361,9 +372,10 @@ class CartController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Order has been successfully cancelled.'
+            'message' => 'Order has been successfully cancelled and stock has been restored.'
         ]);
     }
+
 
     public function removeFromCart($itemId)
     {
