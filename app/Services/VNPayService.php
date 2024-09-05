@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Order;
+use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 
 class VNPayService
@@ -116,8 +117,17 @@ class VNPayService
                 if ($order) {
                     $order->status_id = 2;
                     $order->save();
+
+                    // Giảm số lượng tồn kho cho mỗi sản phẩm trong đơn hàng
+                    foreach ($order->items as $orderItem) {
+                        $variant = ProductVariant::find($orderItem->variant_id);
+                        if ($variant) {
+                            $variant->stock -= $orderItem->quantity;
+                            $variant->save();
+                        }
+                    }
                 }
-                // return ['status' => true, 'order_id' => $orderId];
+
                 return redirect('http://localhost:5173/checkout-done');
             } else {
                 return redirect('http://localhost:5173/checkout-false');

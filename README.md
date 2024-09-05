@@ -44,6 +44,8 @@ Api
 -   GET:http://127.0.0.1:8000/api/products?category_id=id_categories ( Get sản phẩm thuộc danh mục có id categories là = id_categories )
 -   GET:http://127.0.0.1:8000/api/products?search=key ( Tìm kiếm sản phẩm có từ khóa 'key' )
 -   GET:http://127.0.0.1:8000/api/products?sort_by=created_at ( Sắp xếp sản phẩm theo cột. created_at là sắp xếp từ mới đến cũ )
+-   GET:http://127.0.0.1:8000/api/products?attribute[id_attribute][]=id_attribute_value&attribute[id_attribute][]=id_attribute_value&attribute[id_attribute][]=id_attribute_value ( Lọc sản phẩm theo biến thể  ví dụ: http://127.0.0.1:8000/api/products?attribute[1][]=1&attribute[2][]=10&attribute[3][]=16 )
+
 
 <!-- Attribute -->
 GET:http://127.0.0.1:8000/api/attributes (Get all)
@@ -111,17 +113,31 @@ GET: http://127.0.0.1:8000/api/productByCategory/id (id là id của category)
 <!-- Api thứ nhất để lưu các thông tin cơ bản của sản phẩm -->
 - POST: http://127.0.0.1:8000/api/products
     data mẫu:
-     {
-    "name": "Áo thun nam ",
-    "description": "Áo thun nam chất liệu cotton, mềm mại và thoải mái.",
-    "price": 200000,
-    "price_old": 250000,
+    {
+    "name": "Áo Phao Nam Mũ Nhám Cài Siêu Ấm",
+    "description": "Áo phao giữ ấm tốt nhờ kiểu dệt của hai hệ sợi vuông góc với nhau khăng khít, giúp cản gió, cách nhiệt, giữ ấm hiệu quả. sử dụng sợi Polyester chi số lớn, tạo bề mặt vừa đứng phom vừa mềm mại, vừa giữ ấm tốt. Bền, dễ chăm sóc, dễ bảo quản.",
+    "price": 989000,
+    "price_old": 1000000,
     "quantity": 100,
-    "category_id": 53,
+    "category_id": 14,
     "brand_id": null,
-    "promotion": "Giảm giá 10%",
-    "status": "active"
-   }
+    "promotion": "Giảm giá",
+    "status": "active",
+    "images": [
+        {
+            "url": "https://m.yodycdn.com/fit-in/filters:format(webp)/products/pvm6003-gir-smm6097-nau-atm6010-den-01.jpg",
+            "is_thumbnail": true
+        },
+        {
+            "url": "https://m.yodycdn.com/fit-in/filters:format(webp)/products/pvm6003-gir-smm6097-nau-atm6010-den-03.jpg",
+            "is_thumbnail": false
+        },
+        {
+            "url": "https://m.yodycdn.com/fit-in/filters:format(webp)/products/pvm6003-gir-smm6097-nau-atm6010-den-04.jpg",
+            "is_thumbnail": false
+        }
+    ]
+}
 
    + Khi api được thực hiện nó sẽ lưu thông tin sản phẩm và trả ra cục data như sau:
    {
@@ -174,8 +190,8 @@ GET: http://127.0.0.1:8000/api/productByCategory/id (id là id của category)
 
     + get xong được api đấy nó cho cục chi tiết sản phẩm với 1 đống biến thể, show nó ra cái bảng bên phải rồi mình điền ảnh, giá, số lượng.
     + Điền xong gọi api
-- http://127.0.0.1:8000/api/products/variants/update-multiple
-    + Nó sẽ cần các thông tin mình nhập ví dụ như
+- PUT:http://127.0.0.1:8000/api/products/variants/update-multiple
+    + Nó sẽ cần các thông tin mình nhập ví dụ như:
     {
     "variants": [
         {

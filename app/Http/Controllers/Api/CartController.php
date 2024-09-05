@@ -487,6 +487,7 @@ class CartController extends Controller
             ]
         );
 
+
         // Thêm các sản phẩm vào đơn hàng nếu người dùng chưa đăng nhập
         if (!Auth::check()) {
             foreach ($cart as $cartItem) {
@@ -521,7 +522,15 @@ class CartController extends Controller
         }
 
         // Nếu thanh toán là online, redirect tới VNPay
-        if ($payment !== 'COD') {
+        if ($payment === 'COD') {
+            foreach ($order->items as $orderItem) {
+                $variant = ProductVariant::find($orderItem->variant_id);
+                if ($variant) {
+                    $variant->stock -= $orderItem->quantity;
+                    $variant->save();
+                }
+            }
+        } elseif ($payment !== 'COD') {
             $vnpayService = new VNPayService();
             if ($payment === 'online_qr') {
                 $paymentMethod = "VnMart";

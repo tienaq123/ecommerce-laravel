@@ -25,8 +25,10 @@ class ProductController extends Controller
 
         if ($request->has('search')) {
             $search = $request->search;
-            $query->where('name', 'like', '%' . $search . '%')
-                ->orWhere('description', 'like', '%' . $search . '%');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%');
+            });
         }
 
         if ($request->has('category_id')) {
@@ -44,18 +46,18 @@ class ProductController extends Controller
             }
         }
 
-        // if ($request->has('category_id')) {
-        //     $query->where('category_id', $request->category_id);
-        // }
         if ($request->has('brand_id')) {
             $query->where('brand_id', $request->brand_id);
         }
+
         if ($request->has('min_price')) {
             $query->where('price', '>=', $request->min_price);
         }
+
         if ($request->has('max_price')) {
             $query->where('price', '<=', $request->max_price);
         }
+
         if ($request->has('status')) {
             $query->where('status', $request->status);
         }
@@ -66,6 +68,19 @@ class ProductController extends Controller
             $query->orderBy($sortBy, $sortOrder);
         }
 
+        // Lọc theo biến thể
+        if ($request->has('attribute')) {
+            $attributes = $request->attribute;
+            $query->whereHas('productVariants', function ($q) use ($attributes) {
+                foreach ($attributes as $attribute_id => $value_ids) {
+                    $q->whereHas('variantAttributes', function ($subQuery) use ($attribute_id, $value_ids) {
+                        $subQuery->where('attribute_id', $attribute_id)
+                            ->whereIn('value_id', $value_ids);
+                    });
+                }
+            });
+        }
+
         $products = $query->get();
 
         return response()->json([
@@ -74,6 +89,7 @@ class ProductController extends Controller
             'data' => ProductResource::collection($products)
         ], 200);
     }
+
 
     /**
      * Store a newly created resource in storage.
@@ -223,19 +239,19 @@ class ProductController extends Controller
             $sku = 'SKU-' . implode('-', $skuParts);
 
 
-                // Nếu không tồn tại, tạo mới
-                $productVariant = $product->productVariants()->create([
-                    'sku' => $sku,
-                    'stock' => $request->stock,
-                    'price' => $request->price
-                ]);
+            // Nếu không tồn tại, tạo mới
+            $productVariant = $product->productVariants()->create([
+                'sku' => $sku,
+                'stock' => $request->stock,
+                'price' => $request->price
+            ]);
 
-                foreach ($combination as $attribute) {
-                    $productVariant->variantAttributes()->create([
-                        'attribute_id' => $attribute['attribute_id'],
-                        'value_id' => $attribute['value_id']
-                    ]);
-                }
+            foreach ($combination as $attribute) {
+                $productVariant->variantAttributes()->create([
+                    'attribute_id' => $attribute['attribute_id'],
+                    'value_id' => $attribute['value_id']
+                ]);
+            }
 
 
             // Lưu biến thể vào danh sách
