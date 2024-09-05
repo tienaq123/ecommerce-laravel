@@ -148,5 +148,40 @@ get xong được api đấy nó cho cục chi tiết sản phẩm với 1 đố
 Điền xong gọi api
 PUT:http://127.0.0.1:8000/api/products/variants/update-multiple
 
+<<<<<<< HEAD
 Nó sẽ cần các thông tin mình nhập ví dụ như: { "variants": [ { "id": 183,(Đây là id của thằng productVariants) "price": 350000, (giá tùy ý) "stock": 3,(số lượng) "thumbnail": "new-image-url-1.jpg" (ảnh) }, { "id": 184, "price": 400000, "stock": 4, "thumbnail": "new-image-url-2.jpg" }, { "id": 185, "price": 550000, "stock": 5, "thumbnail": "new-image-url-3.jpg" }, ] }
 GET: http://127.0.0.1:8000/api/coupon/list-coupon -> trả về list coupon POST: http://127.0.0.1:8000/api/coupon/add -> thêm mới GET: http://127.0.0.1:8000/api/coupon/showById/{id} -> trả về theo id POST: http://127.0.0.1:8000/api/coupon/getByCode -> truyền vào code trả về theo code PUT: http://127.0.0.1:8000/api/coupon/update/{id} -> cập nhật PATCH: http://127.0.0.1:8000/api/coupon/updateStatus/{id} -> cập nhật trạng thái DELETE: http://127.0.0.1:8000/api/coupon/delete/{id} -> xóa GET: http://127.0.0.1:8000/api/make-code-coupon -> tạo một code
+=======
+    -   Sau khi api được gọi thành công trả về true thì get lại product bằng api
+
+    (idProduct mình sẽ lấy id của thằng product mình vừa tạo ấy)
+
+-   GET:http://127.0.0.1:8000/api/products/{idProduct}
+
+    -   get xong được api đấy nó cho cục chi tiết sản phẩm với 1 đống biến thể, show nó ra cái bảng bên phải rồi mình điền ảnh, giá, số lượng.
+    -   Điền xong gọi api
+
+-   post http://127.0.0.1:8000/api/products/variants/update-multiple + Nó sẽ cần các thông tin mình nhập ví dụ như
+    {
+    "variants": [
+    {
+    "id": 183,(Đây là id của thằng productVariants)
+    "price": 350000, (giá tùy ý)
+    "stock": 3,(số lượng)
+    "thumbnail": "new-image-url-1.jpg" (ảnh)
+    },
+    {
+    "id": 184,
+    "price": 400000,
+    "stock": 4,
+    "thumbnail": "new-image-url-2.jpg"
+    },
+    {
+    "id": 185,
+    "price": 550000,
+    "stock": 5,
+    "thumbnail": "new-image-url-3.jpg"
+    },
+    ]
+    }
+>>>>>>> e3174fd (readme)
