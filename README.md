@@ -214,3 +214,13 @@ GET: http://127.0.0.1:8000/api/productByCategory/id (id là id của category)
         },
     ]
 }
+
+
+GET: http://127.0.0.1:8000/api/coupon/list-coupon -> trả về list coupon
+POST: http://127.0.0.1:8000/api/coupon/add -> thêm mới
+GET: http://127.0.0.1:8000/api/coupon/showById/{id} -> trả về theo id
+POST: http://127.0.0.1:8000/api/coupon/getByCode -> truyền vào code trả về theo code
+PUT: http://127.0.0.1:8000/api/coupon/update/{id} -> cập nhật
+PATCH: http://127.0.0.1:8000/api/coupon/updateStatus/{id} -> cập nhật trạng thái
+DELETE: http://127.0.0.1:8000/api/coupon/delete/{id} -> xóa
+GET: http://127.0.0.1:8000/api/make-code-coupon -> tạo một code

@@ -6,13 +6,14 @@ namespace App\Models;
 
 use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements CanResetPassword
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -20,7 +21,17 @@ class User extends Authenticatable implements CanResetPassword
      * @var array<int, string>
      */
     protected $fillable = [
-        'name', 'avatar', 'email', 'password', 'date_of_birth', 'address', 'phone_number', 'points', 'status', 'role'
+        'name',
+        'avatar',
+        'email',
+        'password',
+        'date_of_birth',
+        'address',
+        'phone_number',
+        'points',
+        'status',
+        'role',
+        'deleted_at'
     ];
 
     public function hasRole($role)

@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\BrandController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\CouponController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PaymentController;
@@ -35,6 +36,20 @@ Route::put('user/update/{id}', [UserController::class, 'update']);
 Route::delete('user/delete/{id}', [UserController::class, 'destroy']);
 Route::patch('user/updateStatus/{id}', [UserController::class, 'updateStatus']);
 Route::patch('user/changeRole/{id}', [UserController::class, 'changeRole']);
+
+
+//coupon
+Route::prefix('coupon/')->group(function () {
+    Route::get('list-coupon', [CouponController::class, 'index']);
+    Route::post('add', [CouponController::class, 'store']);
+    Route::get('showById/{id}', [CouponController::class, 'showById']);
+    Route::post('getByCode', [CouponController::class, 'getByCode']);
+    Route::put('update/{id}', [CouponController::class, 'update']);
+    Route::patch('updateStatus/{id}', [CouponController::class, 'updateStatus']);
+
+    Route::delete('delete/{id}', [CouponController::class, 'destroy']);
+});
+Route::get('make-code-coupon', [CouponController::class, 'makeCode']);
 
 //dashboard
 Route::get('dashboard', [DashboardController::class, 'index']);

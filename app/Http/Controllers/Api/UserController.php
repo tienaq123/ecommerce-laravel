@@ -13,7 +13,6 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-
         $keyword = $request->keyword;
         $per_page = $request->per_page ?? 10;
 
