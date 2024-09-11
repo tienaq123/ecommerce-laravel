@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Coupon;
 use App\Models\GuestOrder;
 use Illuminate\Http\Request;
 use App\Models\Order;
@@ -451,6 +452,7 @@ class CartController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'nullable|string|email|max:255',
             'phone_number' => 'required|string|max:20',
+            'coupon_code' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -480,7 +482,41 @@ class CartController extends Controller
             }
         }
 
+         // Kiểm tra và áp dụng phí ship
+         $shippingFee = 0;
+         if ($totalAmount < 1000000) {
+             $shippingFee = 20000; // Cộng 20k phí ship nếu đơn hàng dưới 1 triệu
+         }
+
+         // Cộng phí ship vào tổng giá trị đơn hàng
+         $totalAmount += $shippingFee;
+
+        // Kiểm tra mã khuyến mãi
+        $discountAmount = 0;
+        if ($request->filled('coupon_code')) {
+            $coupon = Coupon::where('code', $request->coupon_code)
+                ->where('status', 'Active')
+                ->where('expiration_date', '>=', now())
+                ->first();
+
+            if ($coupon) {
+                // Áp dụng giảm giá
+                $discountAmount = $coupon->discount;
+
+                // Cập nhật lại tổng số tiền sau khi giảm giá
+                $totalAmount = $totalAmount * (1 - ($discountAmount / 100));
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Phiếu giảm giá không hợp lệ hoặc đã hết hạn',
+                ], 400);
+            }
+        }
+
+
+
         $payment = $request->payment;
+
         // Tạo hoặc cập nhật đơn hàng
         $order = Order::updateOrCreate(
             [
@@ -489,6 +525,8 @@ class CartController extends Controller
             [
                 'user_id' => Auth::check() ? Auth::id() : null,
                 'total_amount' => $totalAmount,
+                'discount' => $discountAmount, // Lưu giá trị giảm giá
+                // 'shipping_fee' => $shippingFee, // Lưu phí ship
                 'status_id' => $payment !== 'COD' ? 1 : 2, // Nếu thanh toán online thì trạng thái là "chờ thanh toán", nếu COD là "đã xác nhận"
                 'shipping_method' => $request->shipping_method,
                 'payment' => $request->payment,
@@ -496,9 +534,9 @@ class CartController extends Controller
                 'ward' => $request->ward,
                 'district' => $request->district,
                 'city' => $request->city,
+                'coupon_code' => $coupon->code ?? null, // Lưu mã khuyến mãi vào đơn hàng nếu có
             ]
         );
-
 
         // Thêm các sản phẩm vào đơn hàng nếu người dùng chưa đăng nhập
         if (!Auth::check()) {
@@ -565,6 +603,8 @@ class CartController extends Controller
             'order' => $order
         ]);
     }
+
+
 
     private function getProductPrice($productId, $variantId = null)
     {
