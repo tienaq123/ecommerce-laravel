@@ -13,6 +13,8 @@ use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+
 
 class ProductController extends Controller
 {
@@ -95,48 +97,53 @@ class ProductController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        // Validate sản phẩm cơ bản
-        $validation = Validator::make(
-            $request->all(),
-            [
-                'name' => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'price' => 'required|numeric',
-                'price_old' => 'nullable|numeric',
-                'quantity' => 'required|integer',
-                'category_id' => 'nullable|exists:categories,id',
-                'brand_id' => 'nullable',
-                'promotion' => 'nullable|string',
-                'status' => 'nullable|string',
-                'images' => 'required|array',
-                'images.*.url' => 'string|url',
-                'images.*.is_thumbnail' => 'nullable|boolean'
-            ]
-        );
+{
+    // Validate sản phẩm cơ bản
+    $validation = Validator::make(
+        $request->all(),
+        [
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric',
+            'price_old' => 'nullable|numeric',
+            'quantity' => 'required|integer',
+            'category_id' => 'nullable|exists:categories,id',
+            'brand_id' => 'nullable',
+            'promotion' => 'nullable|string',
+            'status' => 'nullable|string',
+            'images' => 'required|array',
+            'images.*' => 'required|file|mimes:jpg,jpeg,png', // Sửa lại để nhận file upload
+            'images.*.is_thumbnail' => 'nullable|boolean'
+        ]
+    );
 
-        if ($validation->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'ErrorValidated',
-                'data' => $validation->errors()
-            ], 422);
-        }
-
-        $product = Product::create($request->only(['name', 'description', 'price', 'price_old', 'quantity', 'category_id', 'brand_id', 'promotion', 'status']));
-
-        foreach ($request->input('images') as $imageData) {
-            $product->productImages()->create([
-                'image_url' => $imageData['url'],
-                'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
-            ]);
-        }
+    if ($validation->fails()) {
         return response()->json([
-            'status' => true,
-            'message' => 'Product created successfully',
-            'data' => new ProductResource($product)
-        ], 200);
+            'status' => false,
+            'message' => 'ErrorValidated',
+            'data' => $validation->errors()
+        ], 422);
     }
+
+    $product = Product::create($request->only(['name', 'description', 'price', 'price_old', 'quantity', 'category_id', 'brand_id', 'promotion', 'status']));
+
+    foreach ($request->file('images') as $imageFile) {
+        // Upload ảnh lên Cloudinary
+        $uploadedFileUrl = Cloudinary::upload($imageFile->getRealPath())->getSecurePath();
+
+        // Lưu URL của ảnh vào CSDL
+        $product->productImages()->create([
+            'image_url' => $uploadedFileUrl,
+            'is_thumbnail' => $request->input('images.is_thumbnail') ?? false,
+        ]);
+    }
+
+    return response()->json([
+        'status' => true,
+        'message' => 'Product created successfully',
+        'data' => new ProductResource($product)
+    ], 200);
+}
 
     // public function toggleProductAttribute(Request $request, $productId)
     // {
