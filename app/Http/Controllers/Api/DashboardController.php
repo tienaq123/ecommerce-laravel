@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -16,43 +17,57 @@ class DashboardController extends Controller
             'status' => true,
             'data' => [
                 'product' => $this->getProductStockLevels(),
-                'order' => $this->orderStatistics()
+                'order' => [
+                    'totalRevenue' => Order::where('status_id', 4)->get()->sum('total_amount'),
+                    'completedOrders' => count(Order::where('status_id', '=', 4)->get()),
+                    'canceledOrders' => count(Order::where('status_id', '=', 5)->get()),
+                    'countOrders' => count(Order::all())
+                ],
+                'user' => $this->userStatistics(),
+                'category' => $this->productByCategory()
             ],
         ]);
     }
 
     public function getProductStockLevels() // sản phẩm tồn kho
     {
-        $productStock = Product::with('productVariants')->get()->sum('quantity');
-        $inventoryTotalValue = Product::with('productVariants')->get()->sum(function ($product) {
-
-            return $product->productVariants->sum('price');
+        $productStock = Product::with('productVariants')->get()->sum(function ($product) {
+            return $product->productVariants->sum('stock');
         });
         $countSoldProducts = Order::where('status_id', 4)->with('items')->get()->sum(function ($order) {
             return $order->items->sum('quantity');
         });
+        $products = count(Product::all());
         $value = [
             'productStock' => $productStock, // số lượng sản phẩm còn trong kho
-            'inventoryTotalValue' => $inventoryTotalValue, // tổng tiền của sản phẩm còn trong kho
-            'countSoldProducts' => $countSoldProducts // số lượng sản phẩm đã bán
+            'countSoldProducts' => $countSoldProducts, // số lượng sản phẩm đã bán
+            'products' => $products
         ];
         return $value;
     }
 
-    protected function orderStatistics()
+    protected function userStatistics()
     {
         $value = [
-            'countOrder' => count(Order::all()), // số lượng đơn hàng
-            'sumOrder' => Order::where('status_id', 4)->get()->sum('total_amount'), // tổng doanh thu
-            'countCompletedOrders' => count(Order::where('status_id', '=', 4)->get()), // đơn đã hoàn thành
-            'countCancelledOrders' => count(Order::where('status_id', '=', 5)->get()) // đơn đã hủy
+            'countUser' => count(User::where('role', 'user')->get()),
+            'countAdmin' => count(User::where('role', 'admin')->get()),
+            'sumUser' => count(User::all()),
+            'userActive' => count(User::where('status', 'active')->get())
         ];
         return $value;
     }
-    protected function getProductByCategoryId($id)
+
+    protected function productByCategory()
     {
-        $category = Category::find($id);
-        $products = count($category->products);
-        return $products;
+        $categories = Category::select('id', 'name')->where('parent_id', 1)->get();
+
+        foreach ($categories as $category) {
+            $ids = $category->allChildrenIds();
+            $ids[] = $category->id;
+            $category->countProduct = count(Product::whereIn('category_id', $ids)->get());
+            unset($category->children);
+            $category->maxProduct = max(Product::select('id', 'name', 'price')->whereIn('category_id', $ids)->get()->toArray());
+        }
+        return $categories;
     }
 }
