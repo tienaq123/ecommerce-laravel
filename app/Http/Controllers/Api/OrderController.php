@@ -15,7 +15,7 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $orders = Order::with(['items.product.productImages', 'status']) 
+        $orders = Order::with(['items.product.productImages', 'items.variant', 'status'])
             ->where('status_id', '!=', 6) // Chỉ lấy đơn hàng đã xác nhận
             ->get();
 
@@ -43,6 +43,7 @@ class OrderController extends Controller
                         'quantity' => $item->quantity,
                         'price' => $item->price,
                         'total_price' => $item->quantity * $item->price,
+                        'sku' => $item->sku,
                         'product' => [
                             'id' => $item->product->id,
                             'sku' => $item->product->sku,
@@ -50,6 +51,11 @@ class OrderController extends Controller
                             'description' => $item->product->description,
                             'price' => $item->product->price,
                             'image' => $item->product->productImages->first()->image_url ?? null, // Ảnh sản phẩm
+                            'variant' => $item->variant ? [
+                                'sku' => $item->variant->sku,
+                                'price' => $item->variant->price,
+                                'thumbnail' => $item->variant->thumbnail,
+                            ] : null,
                         ],
                     ];
                 }),

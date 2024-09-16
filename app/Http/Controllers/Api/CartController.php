@@ -208,7 +208,7 @@ class CartController extends Controller
         $userId = Auth::id();
 
         // Tìm đơn hàng dựa trên orderId và userId để đảm bảo người dùng chỉ có thể xem chi tiết đơn hàng của chính mình
-        $order = Order::with(['items.product.productImages', 'status'])
+        $order = Order::with(['items.product.productImages','items.variant', 'status'])
             ->where('id', $orderId)
             ->where('user_id', $userId)
             ->first();
@@ -250,6 +250,11 @@ class CartController extends Controller
                         'description' => $item->product->description,
                         'price' => $item->product->price,
                         'image' => $item->product->productImages->first()->image_url ?? null, // Ảnh sản phẩm
+                        'variant' => $item->variant ? [
+                            'sku' => $item->variant->sku,
+                            'price' => $item->variant->price,
+                            'thumbnail' => $item->variant->thumbnail,
+                        ] : null,
                     ],
                 ];
             }),
