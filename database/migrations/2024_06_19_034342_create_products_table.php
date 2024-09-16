@@ -17,7 +17,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->decimal('price', 10, 2);
             $table->decimal('price_old', 10, 2)->nullable();
-            $table->integer('quantity');
+            $table->integer('quantity')->nullable();
             $table->integer('view')->default(0);
             $table->unsignedBigInteger('category_id');
             $table->unsignedBigInteger('brand_id')->nullable();

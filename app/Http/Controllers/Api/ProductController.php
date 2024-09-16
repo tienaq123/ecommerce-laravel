@@ -292,6 +292,7 @@ class ProductController extends Controller
 
 
 
+    // Tạo các dữ liệu cho từng biến thế, ví dụ: stock, price, thumbnail
     public function updateMultipleVariants(Request $request)
     {
         // Lấy danh sách các biến thể từ request
