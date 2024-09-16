@@ -43,7 +43,6 @@ class OrderController extends Controller
                         'quantity' => $item->quantity,
                         'price' => $item->price,
                         'total_price' => $item->quantity * $item->price,
-                        'sku' => $item->sku,
                         'product' => [
                             'id' => $item->product->id,
                             'sku' => $item->product->sku,

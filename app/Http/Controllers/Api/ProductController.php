@@ -334,7 +334,7 @@ class ProductController extends Controller
                     $variant->update([
                         'price' => $variantData['price'] ?? $variant->price,
                         'stock' => $variantData['stock'] ?? $variant->stock,
-                        'thumbnail' => 'null'
+                        'thumbnail' => null
                     ]);
                 }
             }
@@ -534,127 +534,159 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    // public function update(Request $request, string $id)
-    // {
-    //     $validation = Validator::make(
-    //         $request->all(),
-    //         [
-    //             'name' => 'required|string|max:255',
-    //             'description' => 'nullable|string',
-    //             'price' => 'required|numeric',
-    //             'price_old' => 'nullable|numeric',
-    //             'quantity' => 'required|integer',
-    //             'category_id' => 'nullable|exists:categories,id',
-    //             'brand_id' => 'nullable|exists:brands,id',
-    //             'promotion' => 'nullable|string',
-    //             'status' => 'nullable|string',
-    //             'variants' => 'sometimes|array',
-    //             'variants.*.id' => 'sometimes|exists:product_variants,id',
-    //             'variants.*.sku' => 'required|string|max:50',
-    //             'variants.*.stock' => 'required|integer',
-    //             'variants.*.price' => 'nullable|numeric',
-    //             'variants.*.attributes' => 'required|array',
-    //             'variants.*.attributes.*.attribute_id' => 'required|exists:attributes,id',
-    //             'variants.*.attributes.*.value_id' => 'required|exists:attribute_values,id',
-    //             'images' => 'sometimes|array',
-    //             'images.*.id' => 'sometimes|exists:product_images,id',
-    //             'images.*.file' => 'sometimes|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
-    //             'images.*.is_thumbnail' => 'nullable|boolean'
-    //         ]
-    //     );
+    public function update(Request $request, string $id)
+    {
+        $validation = Validator::make(
+            $request->all(),
+            [
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'price' => 'required|numeric',
+                'price_old' => 'nullable|numeric',
+                'quantity' => 'nullable|integer',
+                'category_id' => 'nullable|exists:categories,id',
+                'brand_id' => 'nullable|exists:brands,id',
+                'promotion' => 'nullable|string',
+                'status' => 'nullable|string',
+                'variants' => 'sometimes|array',
+                'variants.*.id' => 'sometimes|exists:product_variants,id',
+                'variants.*.sku' => 'required|string|max:50',
+                'variants.*.stock' => 'required|integer',
+                'variants.*.price' => 'nullable|numeric',
+                'variants.*.attributes' => 'required|array',
+                'variants.*.attributes.*.attribute_id' => 'required|exists:attributes,id',
+                'variants.*.attributes.*.value_id' => 'required|exists:attribute_values,id',
+                'images' => 'sometimes|array',
+                'images.*.id' => 'sometimes|exists:product_images,id',
+                'images.*.file' => 'sometimes|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'images.*.is_thumbnail' => 'nullable|boolean'
+            ]
+        );
 
-    //     if ($validation->fails()) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'ErrorValidated',
-    //             'data' => $validation->errors()
-    //         ], 422);
-    //     }
+        if ($validation->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'ErrorValidated',
+                'data' => $validation->errors()
+            ], 422);
+        }
 
-    //     $product = Product::find($id);
+        $product = Product::find($id);
 
-    //     if (!$product) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Product not found',
-    //             'data' => null
-    //         ], 404);
-    //     }
+        if (!$product) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Product not found',
+                'data' => null
+            ], 404);
+        }
 
-    //     $product->update($request->only(['name', 'description', 'price', 'price_old', 'quantity', 'category_id', 'brand_id', 'promotion', 'status']));
+        $product->update($request->only(['name', 'description', 'price', 'price_old', 'quantity', 'category_id', 'brand_id', 'promotion', 'status']));
 
-    //     if ($request->has('variants')) {
-    //         foreach ($request->variants as $variantData) {
-    //             if (isset($variantData['id'])) {
-    //                 $productVariant = ProductVariant::find($variantData['id']);
-    //                 if ($productVariant) {
-    //                     $productVariant->update([
-    //                         'sku' => $variantData['sku'],
-    //                         'stock' => $variantData['stock'],
-    //                         'price' => $variantData['price'],
-    //                         'thumbnail' => $variantData['thumbnail'] ?? null
-    //                     ]);
+        if ($request->has('variants')) {
+            foreach ($request->variants as $variantData) {
+                if (isset($variantData['id'])) {
+                    $productVariant = ProductVariant::find($variantData['id']);
+                    if ($productVariant) {
+                        if ($request->hasFile('thumbnail.' . $productVariant['id'])) {
+                            $uploadedThumbnailUrl = Cloudinary::upload($request->file('thumbnail.' . $variantData['id'])->getRealPath())->getSecurePath();
+                            $productVariant->update([
+                                'sku' => $variantData['sku'],
+                                'stock' => $variantData['stock'],
+                                'price' => $variantData['price'],
+                                'thumbnail' => $uploadedThumbnailUrl
+                            ]);
 
-    //                     $productVariant->variantAttributes()->delete();
-    //                     foreach ($variantData['attributes'] as $attribute) {
-    //                         $productVariant->variantAttributes()->create([
-    //                             'attribute_id' => $attribute['attribute_id'],
-    //                             'value_id' => $attribute['value_id']
-    //                         ]);
-    //                     }
-    //                 }
-    //             } else {
-    //                 $productVariant = $product->productVariants()->create([
-    //                     'sku' => $variantData['sku'],
-    //                     'stock' => $variantData['stock'],
-    //                     'price' => $variantData['price'],
-    //                     'thumbnail' => $variantData['thumbnail'] ?? null
-    //                 ]);
+                            $productVariant->variantAttributes()->delete();
+                            foreach ($variantData['attributes'] as $attribute) {
+                                $productVariant->variantAttributes()->create([
+                                    'attribute_id' => $attribute['attribute_id'],
+                                    'value_id' => $attribute['value_id']
+                                ]);
+                            }
+                        } else {
+                            $productVariant->update([
+                                'sku' => $variantData['sku'],
+                                'stock' => $variantData['stock'],
+                                'price' => $variantData['price'],
+                                'thumbnail' => null
+                            ]);
 
-    //                 foreach ($variantData['attributes'] as $attribute) {
-    //                     $productVariant->variantAttributes()->create([
-    //                         'attribute_id' => $attribute['attribute_id'],
-    //                         'value_id' => $attribute['value_id']
-    //                     ]);
-    //                 }
-    //             }
-    //         }
-    //     }
+                            $productVariant->variantAttributes()->delete();
+                            foreach ($variantData['attributes'] as $attribute) {
+                                $productVariant->variantAttributes()->create([
+                                    'attribute_id' => $attribute['attribute_id'],
+                                    'value_id' => $attribute['value_id']
+                                ]);
+                            }
+                        }
+                    }
+                } else {
+                    $productVariant = $product->productVariants()->create([
+                        'sku' => $variantData['sku'],
+                        'stock' => $variantData['stock'],
+                        'price' => $variantData['price'],
+                        'thumbnail' => $variantData['thumbnail'] ?? null
+                    ]);
 
-    //     if ($request->has('images')) {
-    //         foreach ($request->images as $imageData) {
-    //             if (isset($imageData['id'])) {
-    //                 $productImage = ProductImage::find($imageData['id']);
-    //                 if ($productImage) {
-    //                     if (isset($imageData['file'])) {
-    //                         Storage::disk('public')->delete($productImage->image_url);
-    //                         $path = $imageData['file']->store('product_images', 'public');
-    //                         $productImage->update([
-    //                             'image_url' => $path,
-    //                             'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
-    //                         ]);
-    //                     } else {
-    //                         $productImage->update([
-    //                             'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
-    //                         ]);
-    //                     }
-    //                 }
-    //             } else {
-    //                 $path = $imageData['file']->store('product_images', 'public');
-    //                 $product->productImages()->create([
-    //                     'image_url' => $path,
-    //                     'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
-    //                 ]);
-    //             }
-    //         }
-    //     }
+                    foreach ($variantData['attributes'] as $attribute) {
+                        $productVariant->variantAttributes()->create([
+                            'attribute_id' => $attribute['attribute_id'],
+                            'value_id' => $attribute['value_id']
+                        ]);
+                    }
+                }
+            }
+        }
 
-    //     return response()->json([
-    //         'status' => true,
-    //         'message' => 'Product updated successfully',
-    //         'data' => new ProductResource($product)
-    //     ], 200);
-    // }
+        if ($request->has('images')) {
+            foreach ($request->images as $imageData) {
+                // Kiểm tra nếu có id của ảnh thì cập nhật
+                if (isset($imageData['id'])) {
+                    $productImage = ProductImage::find($imageData['id']);
+                    if ($productImage) {
+                        // Kiểm tra nếu có file ảnh mới thì upload lên Cloudinary
+                        if (isset($imageData['file'])) {
+                            // Xóa ảnh cũ khỏi Cloudinary (nếu cần, dựa vào image_url của ảnh hiện tại)
+                            // Cloudinary::destroy($productImage->image_url);
+
+                            // Upload ảnh mới lên Cloudinary
+                            $uploadedFileUrl = Cloudinary::upload($imageData['file']->getRealPath())->getSecurePath();
+
+                            // Cập nhật URL và trạng thái is_thumbnail
+                            $productImage->update([
+                                'image_url' => $uploadedFileUrl,
+                                'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
+                            ]);
+                        } else {
+                            // Chỉ cập nhật is_thumbnail nếu không có ảnh mới
+                            $productImage->update([
+                                'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
+                            ]);
+                        }
+                    }
+                } else {
+                    // Trường hợp thêm ảnh mới (không có ID)
+                    if (isset($imageData['file'])) {
+                        // Upload ảnh mới lên Cloudinary
+                        $uploadedFileUrl = Cloudinary::upload($imageData['file']->getRealPath())->getSecurePath();
+
+                        // Tạo mới ảnh sản phẩm và lưu URL từ Cloudinary
+                        $product->productImages()->create([
+                            'image_url' => $uploadedFileUrl,
+                            'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
+                        ]);
+                    }
+                }
+            }
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Product updated successfully',
+            'data' => new ProductResource($product)
+        ], 200);
+    }
 
 
     /**
