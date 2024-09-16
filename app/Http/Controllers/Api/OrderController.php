@@ -15,7 +15,7 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $orders = Order::with(['items.product.productImages', 'status']) // Include the productImages relationship
+        $orders = Order::with(['items.product.productImages', 'status']) 
             ->where('status_id', '!=', 6) // Chỉ lấy đơn hàng đã xác nhận
             ->get();
 
@@ -45,6 +45,7 @@ class OrderController extends Controller
                         'total_price' => $item->quantity * $item->price,
                         'product' => [
                             'id' => $item->product->id,
+                            'sku' => $item->product->sku,
                             'name' => $item->product->name,
                             'description' => $item->product->description,
                             'price' => $item->product->price,
