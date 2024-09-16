@@ -97,53 +97,53 @@ class ProductController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-{
-    // Validate sản phẩm cơ bản
-    $validation = Validator::make(
-        $request->all(),
-        [
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric',
-            'price_old' => 'nullable|numeric',
-            'quantity' => 'required|integer',
-            'category_id' => 'nullable|exists:categories,id',
-            'brand_id' => 'nullable',
-            'promotion' => 'nullable|string',
-            'status' => 'nullable|string',
-            'images' => 'required|array',
-            'images.*' => 'required|file|mimes:jpg,jpeg,png', // Sửa lại để nhận file upload
-            'images.*.is_thumbnail' => 'nullable|boolean'
-        ]
-    );
+    {
+        // Validate sản phẩm cơ bản
+        $validation = Validator::make(
+            $request->all(),
+            [
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'price' => 'required|numeric',
+                'price_old' => 'nullable|numeric',
+                'quantity' => 'required|integer',
+                'category_id' => 'nullable|exists:categories,id',
+                'brand_id' => 'nullable',
+                'promotion' => 'nullable|string',
+                'status' => 'nullable|string',
+                'images' => 'required|array',
+                'images.*' => 'required|file|mimes:jpg,jpeg,png', // Sửa lại để nhận file upload
+                'images.*.is_thumbnail' => 'nullable|boolean'
+            ]
+        );
 
-    if ($validation->fails()) {
+        if ($validation->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'ErrorValidated',
+                'data' => $validation->errors()
+            ], 422);
+        }
+
+        $product = Product::create($request->only(['name', 'description', 'price', 'price_old', 'quantity', 'category_id', 'brand_id', 'promotion', 'status']));
+
+        foreach ($request->file('images') as $imageFile) {
+            // Upload ảnh lên Cloudinary
+            $uploadedFileUrl = Cloudinary::upload($imageFile->getRealPath())->getSecurePath();
+
+            // Lưu URL của ảnh vào CSDL
+            $product->productImages()->create([
+                'image_url' => $uploadedFileUrl,
+                'is_thumbnail' => $request->input('images.is_thumbnail') ?? false,
+            ]);
+        }
+
         return response()->json([
-            'status' => false,
-            'message' => 'ErrorValidated',
-            'data' => $validation->errors()
-        ], 422);
+            'status' => true,
+            'message' => 'Product created successfully',
+            'data' => new ProductResource($product)
+        ], 200);
     }
-
-    $product = Product::create($request->only(['name', 'description', 'price', 'price_old', 'quantity', 'category_id', 'brand_id', 'promotion', 'status']));
-
-    foreach ($request->file('images') as $imageFile) {
-        // Upload ảnh lên Cloudinary
-        $uploadedFileUrl = Cloudinary::upload($imageFile->getRealPath())->getSecurePath();
-
-        // Lưu URL của ảnh vào CSDL
-        $product->productImages()->create([
-            'image_url' => $uploadedFileUrl,
-            'is_thumbnail' => $request->input('images.is_thumbnail') ?? false,
-        ]);
-    }
-
-    return response()->json([
-        'status' => true,
-        'message' => 'Product created successfully',
-        'data' => new ProductResource($product)
-    ], 200);
-}
 
     // public function toggleProductAttribute(Request $request, $productId)
     // {
@@ -250,7 +250,7 @@ class ProductController extends Controller
             $productVariant = $product->productVariants()->create([
                 'sku' => $sku,
                 'stock' => $request->stock,
-                'price' => $request->price
+                'price' => $request->price,
             ]);
 
             foreach ($combination as $attribute) {
@@ -295,6 +295,21 @@ class ProductController extends Controller
     // Tạo các dữ liệu cho từng biến thế, ví dụ: stock, price, thumbnail
     public function updateMultipleVariants(Request $request)
     {
+        $validation = Validator::make(
+            $request->all(),
+            [
+                'thumbnail.*' => 'required|file|mimes:jpg,jpeg,png', // Validate file upload cho thumbnail
+            ]
+        );
+
+        if ($validation->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'ErrorValidated',
+                'data' => $validation->errors()
+            ], 422);
+        }
+
         // Lấy danh sách các biến thể từ request
         $variants = $request->input('variants');
 
@@ -303,12 +318,25 @@ class ProductController extends Controller
             $variant = ProductVariant::find($variantData['id']);
 
             if ($variant) {
-                // Cập nhật thông tin biến thể
-                $variant->update([
-                    'price' => $variantData['price'] ?? $variant->price,
-                    'stock' => $variantData['stock'] ?? $variant->stock,
-                    'thumbnail' => $variantData['thumbnail'] ?? $variant->thumbnail,
-                ]);
+                // Kiểm tra xem có file thumbnail upload không
+                if ($request->hasFile('thumbnail.' . $variantData['id'])) {
+                    // Upload file thumbnail lên Cloudinary
+                    $uploadedThumbnailUrl = Cloudinary::upload($request->file('thumbnail.' . $variantData['id'])->getRealPath())->getSecurePath();
+
+                    // Cập nhật thông tin biến thể với URL thumbnail từ Cloudinary
+                    $variant->update([
+                        'price' => $variantData['price'] ?? $variant->price,
+                        'stock' => $variantData['stock'] ?? $variant->stock,
+                        'thumbnail' => $uploadedThumbnailUrl, // Lưu URL thumbnail từ Cloudinary
+                    ]);
+                } else {
+                    // Nếu không có file thumbnail mới, chỉ cập nhật giá và stock
+                    $variant->update([
+                        'price' => $variantData['price'] ?? $variant->price,
+                        'stock' => $variantData['stock'] ?? $variant->stock,
+                        'thumbnail' => 'null'
+                    ]);
+                }
             }
         }
 
