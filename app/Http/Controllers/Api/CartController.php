@@ -39,7 +39,7 @@ class CartController extends Controller
         if (Auth::check()) {
             $userId = Auth::id();
             $order = Order::firstOrCreate(
-                ['user_id' => $userId, 'status_id' => 1],
+                ['user_id' => $userId, 'status_id' => 6],
                 ['total_amount' => 0]
             );
 
@@ -86,7 +86,7 @@ class CartController extends Controller
     {
         if (Auth::check()) {
             $userId = Auth::id();
-            $order = Order::with(['items.product', 'items.variant'])->where('user_id', $userId)->where('status_id', 1)->first();
+            $order = Order::with(['items.product', 'items.variant'])->where('user_id', $userId)->where('status_id', 6)->first();
 
             if (!$order) {
                 return response()->json(['message' => 'Your cart is empty'], 200);
@@ -154,7 +154,7 @@ class CartController extends Controller
             $userId = Auth::id();
             $orders = Order::with(['items.product', 'items.variant', 'status']) // Include status relationship
                 ->where('user_id', $userId)
-                ->where('status_id', '!=', 1) // Lấy các đơn hàng có trạng thái khác 1
+                ->where('status_id', '!=', 6) // Lấy các đơn hàng có trạng thái khác 6
                 ->get();
 
             if ($orders->isEmpty()) {
@@ -280,7 +280,7 @@ class CartController extends Controller
 
         if (Auth::check()) {
             $userId = Auth::id();
-            $order = Order::where('user_id', $userId)->where('status_id', 1)->first();
+            $order = Order::where('user_id', $userId)->where('status_id', 6)->first();
 
             if (!$order) {
                 return response()->json(['message' => 'Your cart is empty'], 404);
@@ -349,7 +349,7 @@ class CartController extends Controller
         }
 
         // Kiểm tra xem trạng thái hiện tại của đơn hàng có cho phép hủy không
-        if ($order->status_id != 2) { // Chỉ cho phép hủy nếu trạng thái đơn hàng là 'Confirmed'
+        if ($order->status_id != 1) { // Chỉ cho phép hủy nếu trạng thái đơn hàng là 'Pending'
             return response()->json([
                 'status' => false,
                 'message' => 'Đơn hàng đã xác nhận không thể hủy'
@@ -382,7 +382,7 @@ class CartController extends Controller
     {
         if (Auth::check()) {
             $userId = Auth::id();
-            $order = Order::where('user_id', $userId)->where('status_id', 1)->first();
+            $order = Order::where('user_id', $userId)->where('status_id', 6)->first();
 
             if (!$order) {
                 return response()->json(['message' => 'Your cart is empty'], 404);
@@ -419,7 +419,7 @@ class CartController extends Controller
     {
         if (Auth::check()) {
             $userId = Auth::id();
-            $order = Order::with(['items'])->where('user_id', $userId)->where('status_id', 1)->first();
+            $order = Order::with(['items'])->where('user_id', $userId)->where('status_id', 6)->first();
 
             if (!$order) {
                 return response()->json(['message' => 'Your cart is already empty'], 404);
@@ -464,7 +464,7 @@ class CartController extends Controller
         }
 
         // Lấy thông tin giỏ hàng
-        $cart = Auth::check() ? Order::where('user_id', Auth::id())->where('status_id', 1)->first() : session()->get('cart', []);
+        $cart = Auth::check() ? Order::where('user_id', Auth::id())->where('status_id', 6)->first() : session()->get('cart', []);
 
         if (empty($cart)) {
             return response()->json(['message' => 'Your cart is empty'], 404);
@@ -527,7 +527,7 @@ class CartController extends Controller
                 'total_amount' => $totalAmount,
                 'discount' => $discountAmount, // Lưu giá trị giảm giá
                 // 'shipping_fee' => $shippingFee, // Lưu phí ship
-                'status_id' => $payment !== 'COD' ? 1 : 2, // Nếu thanh toán online thì trạng thái là "chờ thanh toán", nếu COD là "đã xác nhận"
+                'status_id' => $payment !== 'COD' ? 6 : 1, // Nếu thanh toán online thì trạng thái là "chờ thanh toán", nếu COD là "đã xác nhận"
                 'shipping_method' => $request->shipping_method,
                 'payment' => $request->payment,
                 'address_detail' => $request->address_detail,

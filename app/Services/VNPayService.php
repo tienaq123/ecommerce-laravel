@@ -115,7 +115,7 @@ class VNPayService
                 $orderId = $inputData['vnp_TxnRef'];
                 $order = Order::find($orderId);
                 if ($order) {
-                    $order->status_id = 2;
+                    $order->status_id = 1;
                     $order->save();
 
                     // Giảm số lượng tồn kho cho mỗi sản phẩm trong đơn hàng
