@@ -229,12 +229,16 @@ class ProductController extends Controller
         // Lấy các thuộc tính từ request
         $attributes = $request->attribute;
 
-        // Khởi tạo danh sách biến thể
-        $variants = [];
-
-        // Tạo các tổ hợp biến thể
+        // Tạo các tổ hợp biến thể từ request
         $combinations = $this->generateCombinations($attributes);
 
+        // Lấy tất cả các biến thể hiện có của sản phẩm
+        $existingVariants = $product->productVariants()->with('variantAttributes')->get();
+
+        // Khởi tạo mảng chứa SKU các biến thể từ request
+        $requestVariantSkus = [];
+
+        // Duyệt qua các tổ hợp biến thể từ request
         foreach ($combinations as $combination) {
             $skuParts = [];
 
@@ -243,32 +247,48 @@ class ProductController extends Controller
                 $skuParts[] = $valueName;
             }
 
+            // Tạo SKU cho biến thể
             $sku = 'SKU-' . implode('-', $skuParts);
+            $requestVariantSkus[] = $sku;
 
+            // Kiểm tra xem biến thể đã tồn tại chưa
+            $existingVariant = $existingVariants->firstWhere('sku', $sku);
 
-            // Nếu không tồn tại, tạo mới
-            $productVariant = $product->productVariants()->create([
-                'sku' => $sku,
-                'stock' => $request->stock,
-                'price' => $request->price,
-            ]);
-
-            foreach ($combination as $attribute) {
-                $productVariant->variantAttributes()->create([
-                    'attribute_id' => $attribute['attribute_id'],
-                    'value_id' => $attribute['value_id']
+            if ($existingVariant) {
+                // Nếu đã tồn tại, cập nhật biến thể
+                $existingVariant->update([
+                    'stock' => $request->stock,
+                    'price' => $request->price,
                 ]);
+            } else {
+                // Nếu chưa tồn tại, tạo mới biến thể
+                $newVariant = $product->productVariants()->create([
+                    'sku' => $sku,
+                    'stock' => $request->stock,
+                    'price' => $request->price,
+                ]);
+
+                // Lưu thuộc tính của biến thể
+                foreach ($combination as $attribute) {
+                    $newVariant->variantAttributes()->create([
+                        'attribute_id' => $attribute['attribute_id'],
+                        'value_id' => $attribute['value_id']
+                    ]);
+                }
             }
+        }
 
-
-            // Lưu biến thể vào danh sách
-            $variants[] = $sku;
+        // Xóa các biến thể không còn trong request
+        foreach ($existingVariants as $existingVariant) {
+            if (!in_array($existingVariant->sku, $requestVariantSkus)) {
+                $existingVariant->delete();
+            }
         }
 
         return response()->json([
             'status' => true,
             'message' => 'Product variants updated successfully',
-            'variants' => $variants,
+            'variants' => $requestVariantSkus,
         ], 200);
     }
 
@@ -289,6 +309,7 @@ class ProductController extends Controller
 
         return $combinations;
     }
+
 
 
 
@@ -539,6 +560,7 @@ class ProductController extends Controller
         $validation = Validator::make(
             $request->all(),
             [
+                // Validation cho sản phẩm
                 'name' => 'required|string|max:255',
                 'description' => 'nullable|string',
                 'price' => 'required|numeric',
@@ -548,14 +570,14 @@ class ProductController extends Controller
                 'brand_id' => 'nullable|exists:brands,id',
                 'promotion' => 'nullable|string',
                 'status' => 'nullable|string',
+
+                // Validation cho biến thể
                 'variants' => 'sometimes|array',
                 'variants.*.id' => 'sometimes|exists:product_variants,id',
-                'variants.*.sku' => 'required|string|max:50',
                 'variants.*.stock' => 'required|integer',
                 'variants.*.price' => 'nullable|numeric',
-                'variants.*.attributes' => 'required|array',
-                'variants.*.attributes.*.attribute_id' => 'required|exists:attributes,id',
-                'variants.*.attributes.*.value_id' => 'required|exists:attribute_values,id',
+
+                // Validation cho ảnh
                 'images' => 'sometimes|array',
                 'images.*.id' => 'sometimes|exists:product_images,id',
                 'images.*.file' => 'sometimes|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
@@ -571,6 +593,7 @@ class ProductController extends Controller
             ], 422);
         }
 
+        // Tìm sản phẩm theo ID
         $product = Product::find($id);
 
         if (!$product) {
@@ -581,73 +604,48 @@ class ProductController extends Controller
             ], 404);
         }
 
+        // Cập nhật thông tin sản phẩm
         $product->update($request->only(['name', 'description', 'price', 'price_old', 'quantity', 'category_id', 'brand_id', 'promotion', 'status']));
 
+        // Cập nhật biến thể (nếu có)
         if ($request->has('variants')) {
             foreach ($request->variants as $variantData) {
                 if (isset($variantData['id'])) {
+                    // Cập nhật biến thể đã tồn tại
                     $productVariant = ProductVariant::find($variantData['id']);
                     if ($productVariant) {
-                        if ($request->hasFile('thumbnail.' . $productVariant['id'])) {
-                            $uploadedThumbnailUrl = Cloudinary::upload($request->file('thumbnail.' . $variantData['id'])->getRealPath())->getSecurePath();
-                            $productVariant->update([
-                                'sku' => $variantData['sku'],
-                                'stock' => $variantData['stock'],
-                                'price' => $variantData['price'],
-                                'thumbnail' => $uploadedThumbnailUrl
-                            ]);
-
-                            $productVariant->variantAttributes()->delete();
-                            foreach ($variantData['attributes'] as $attribute) {
-                                $productVariant->variantAttributes()->create([
-                                    'attribute_id' => $attribute['attribute_id'],
-                                    'value_id' => $attribute['value_id']
-                                ]);
-                            }
-                        } else {
-                            $productVariant->update([
-                                'sku' => $variantData['sku'],
-                                'stock' => $variantData['stock'],
-                                'price' => $variantData['price'],
-                                'thumbnail' => null
-                            ]);
-
-                            $productVariant->variantAttributes()->delete();
-                            foreach ($variantData['attributes'] as $attribute) {
-                                $productVariant->variantAttributes()->create([
-                                    'attribute_id' => $attribute['attribute_id'],
-                                    'value_id' => $attribute['value_id']
-                                ]);
-                            }
-                        }
-                    }
-                } else {
-                    $productVariant = $product->productVariants()->create([
-                        'sku' => $variantData['sku'],
-                        'stock' => $variantData['stock'],
-                        'price' => $variantData['price'],
-                        'thumbnail' => $variantData['thumbnail'] ?? null
-                    ]);
-
-                    foreach ($variantData['attributes'] as $attribute) {
-                        $productVariant->variantAttributes()->create([
-                            'attribute_id' => $attribute['attribute_id'],
-                            'value_id' => $attribute['value_id']
+                        $productVariant->update([
+                            'stock' => $variantData['stock'],
+                            'price' => $variantData['price'],
                         ]);
                     }
+                } else {
+                    // // Tạo mới biến thể nếu chưa tồn tại
+                    // $productVariant = $product->productVariants()->create([
+                    //     'sku' => $variantData['sku'],
+                    //     'stock' => $variantData['stock'],
+                    //     'price' => $variantData['price']
+                    // ]);
+
+                    // foreach ($variantData['attributes'] as $attribute) {
+                    //     $productVariant->variantAttributes()->create([
+                    //         'attribute_id' => $attribute['attribute_id'],
+                    //         'value_id' => $attribute['value_id']
+                    //     ]);
+                    // }
                 }
             }
         }
 
+        // Cập nhật hoặc thêm mới ảnh sản phẩm
         if ($request->has('images')) {
             foreach ($request->images as $imageData) {
-                // Kiểm tra nếu có id của ảnh thì cập nhật
                 if (isset($imageData['id'])) {
+                    // Cập nhật ảnh đã tồn tại
                     $productImage = ProductImage::find($imageData['id']);
                     if ($productImage) {
-                        // Kiểm tra nếu có file ảnh mới thì upload lên Cloudinary
                         if (isset($imageData['file'])) {
-                            // Xóa ảnh cũ khỏi Cloudinary (nếu cần, dựa vào image_url của ảnh hiện tại)
+                            // Xóa ảnh cũ trên Cloudinary (nếu cần)
                             // Cloudinary::destroy($productImage->image_url);
 
                             // Upload ảnh mới lên Cloudinary
@@ -659,19 +657,18 @@ class ProductController extends Controller
                                 'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
                             ]);
                         } else {
-                            // Chỉ cập nhật is_thumbnail nếu không có ảnh mới
+                            // Cập nhật is_thumbnail nếu không có file mới
                             $productImage->update([
                                 'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
                             ]);
                         }
                     }
                 } else {
-                    // Trường hợp thêm ảnh mới (không có ID)
+                    // Thêm mới ảnh
                     if (isset($imageData['file'])) {
-                        // Upload ảnh mới lên Cloudinary
                         $uploadedFileUrl = Cloudinary::upload($imageData['file']->getRealPath())->getSecurePath();
 
-                        // Tạo mới ảnh sản phẩm và lưu URL từ Cloudinary
+                        // Tạo ảnh mới và lưu URL từ Cloudinary
                         $product->productImages()->create([
                             'image_url' => $uploadedFileUrl,
                             'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
@@ -687,6 +684,7 @@ class ProductController extends Controller
             'data' => new ProductResource($product)
         ], 200);
     }
+
 
 
     /**
