@@ -22,7 +22,7 @@ return new class extends Migration
             $table->unsignedBigInteger('category_id');
             $table->unsignedBigInteger('brand_id')->nullable();
             $table->string('promotion')->nullable();
-            $table->string('status')->default('Active');
+            $table->string('status')->default('active');
             $table->softDeletes();
             $table->timestamps();
 

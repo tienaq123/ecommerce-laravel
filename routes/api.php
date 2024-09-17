@@ -86,7 +86,8 @@ Route::apiResource('brands', BrandController::class);
 Route::post('/categories/restore/{id}', [CategoryController::class, 'restore']);
 
 //products
-Route::apiResource('products', ProductController::class);
+Route::resource('products', ProductController::class);
+// Route::post('product/{id}', [ProductController::class, 'updatez']);
 // Route::post('products/{productId}/toggle-attribute', [ProductController::class, 'toggleProductAttribute']);
 Route::post('/products/{product}/variants', [ProductController::class, 'updateVariants']);
 

@@ -112,7 +112,7 @@ class ProductController extends Controller
                 'promotion' => 'nullable|string',
                 'status' => 'nullable|string',
                 'images' => 'required|array',
-                'images.*' => 'required|file|mimes:jpg,jpeg,png', // Sửa lại để nhận file upload
+                'images.*' => 'required|file|mimes:jpg,jpeg,png,webp', // Sửa lại để nhận file upload
                 'images.*.is_thumbnail' => 'nullable|boolean'
             ]
         );
@@ -575,12 +575,12 @@ class ProductController extends Controller
                 'variants' => 'sometimes|array',
                 'variants.*.id' => 'sometimes|exists:product_variants,id',
                 'variants.*.stock' => 'required|integer',
-                'variants.*.price' => 'nullable|numeric',
+                'variants.*.price' => 'required|numeric',
 
                 // Validation cho ảnh
                 'images' => 'sometimes|array',
-                'images.*.id' => 'sometimes|exists:product_images,id',
-                'images.*.file' => 'sometimes|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'images.*.id' => 'sometimes',
+                'images.*.file' => 'sometimes|file|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
                 'images.*.is_thumbnail' => 'nullable|boolean'
             ]
         );
@@ -620,55 +620,53 @@ class ProductController extends Controller
                         ]);
                     }
                 } else {
-                    // // Tạo mới biến thể nếu chưa tồn tại
-                    // $productVariant = $product->productVariants()->create([
-                    //     'sku' => $variantData['sku'],
-                    //     'stock' => $variantData['stock'],
-                    //     'price' => $variantData['price']
-                    // ]);
+                    // Tạo mới biến thể nếu chưa tồn tại
+                    $productVariant = $product->productVariants()->create([
+                        'sku' => $variantData['sku'],
+                        'stock' => $variantData['stock'],
+                        'price' => $variantData['price']
+                    ]);
 
-                    // foreach ($variantData['attributes'] as $attribute) {
-                    //     $productVariant->variantAttributes()->create([
-                    //         'attribute_id' => $attribute['attribute_id'],
-                    //         'value_id' => $attribute['value_id']
-                    //     ]);
-                    // }
+                    foreach ($variantData['attributes'] as $attribute) {
+                        $productVariant->variantAttributes()->create([
+                            'attribute_id' => $attribute['attribute_id'],
+                            'value_id' => $attribute['value_id']
+                        ]);
+                    }
                 }
             }
         }
 
         // Cập nhật hoặc thêm mới ảnh sản phẩm
         if ($request->has('images')) {
-            foreach ($request->images as $imageData) {
+            $images = $request->input('images', []);
+
+            // Lấy tất cả ID của ảnh có trong request để giữ lại
+            $requestImageIds = collect($images)
+                ->filter(fn($imageData) => isset($imageData['id']))
+                ->pluck('id')
+                ->toArray();
+
+            // Xóa các ảnh không có trong request nhưng có trong CSDL
+            $existingImages = $product->productImages()->pluck('id')->toArray();
+            $imagesToDelete = array_diff($existingImages, $requestImageIds);
+            ProductImage::destroy($imagesToDelete); // Xóa ảnh không có trong request
+
+            // Xử lý ảnh mới và ảnh đã tồn tại
+            foreach ($images as $key => $imageData) {
                 if (isset($imageData['id'])) {
-                    // Cập nhật ảnh đã tồn tại
+                    // Ảnh đã tồn tại, cập nhật thông tin của nó
                     $productImage = ProductImage::find($imageData['id']);
                     if ($productImage) {
-                        if (isset($imageData['file'])) {
-                            // Xóa ảnh cũ trên Cloudinary (nếu cần)
-                            // Cloudinary::destroy($productImage->image_url);
-
-                            // Upload ảnh mới lên Cloudinary
-                            $uploadedFileUrl = Cloudinary::upload($imageData['file']->getRealPath())->getSecurePath();
-
-                            // Cập nhật URL và trạng thái is_thumbnail
-                            $productImage->update([
-                                'image_url' => $uploadedFileUrl,
-                                'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
-                            ]);
-                        } else {
-                            // Cập nhật is_thumbnail nếu không có file mới
-                            $productImage->update([
-                                'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
-                            ]);
-                        }
+                        $productImage->update([
+                            'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
+                        ]);
                     }
                 } else {
-                    // Thêm mới ảnh
-                    if (isset($imageData['file'])) {
-                        $uploadedFileUrl = Cloudinary::upload($imageData['file']->getRealPath())->getSecurePath();
-
-                        // Tạo ảnh mới và lưu URL từ Cloudinary
+                    // Xử lý ảnh mới, upload lên Cloudinary
+                    $imageFile = $request->file("images.$key.file");
+                    if ($imageFile instanceof \Illuminate\Http\UploadedFile) {
+                        $uploadedFileUrl = Cloudinary::upload($imageFile->getRealPath())->getSecurePath();
                         $product->productImages()->create([
                             'image_url' => $uploadedFileUrl,
                             'is_thumbnail' => $imageData['is_thumbnail'] ?? false,
@@ -684,6 +682,7 @@ class ProductController extends Controller
             'data' => new ProductResource($product)
         ], 200);
     }
+
 
 
 
