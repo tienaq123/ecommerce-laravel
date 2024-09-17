@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -130,6 +131,26 @@ class OrderController extends Controller
         }
 
         // Cập nhật trạng thái đơn hàng
+        if ($order->status_id === 5) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Đơn hàng đã bị hủy không thể cập nhật'
+            ], 400);
+        } else if ($order->status_id === 4) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Đơn hàng đã hoàn tất không thể cập nhật'
+            ], 400);
+        }
+
+        foreach ($order->orderItems as $orderItem) {
+            $variant = ProductVariant::find($orderItem->variant_id);
+
+            if ($variant) {
+                $variant->stock += $orderItem->quantity;
+                $variant->save();
+            }
+        }
         $order->status_id = $request->input('status_id');
         $order->save();
 
