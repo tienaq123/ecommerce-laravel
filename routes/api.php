@@ -62,18 +62,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/cart/{itemId}', [CartController::class, 'removeFromCart']);
     Route::put('/cart/{itemId}', [CartController::class, 'updateCart']);
     Route::delete('/cart', [CartController::class, 'clearCart']); // Clear Cart
-    Route::post('/cart/checking', [CartController::class, 'checkingCart']); // Checking
+    Route::get('/cart/checking', [CartController::class, 'checkingCart']); // Checking
     Route::post('/cart/checkout', [CartController::class, 'checkout']); // Checkout
 
     // order
     Route::apiResource('order', OrderController::class);
 
     Route::get('/list-order', [CartController::class, 'viewOrder']);
-    Route::PUT('/update-status/{id}', [OrderController::class, 'updateStatus']);
     Route::post('/orders/{orderId}/cancel', [CartController::class, 'cancelOrder']);
     Route::get('/orders/{orderId}/detail', [CartController::class, 'detail']);
 });
 Route::apiResource('order', OrderController::class);
+Route::PUT('/update-status/{id}', [OrderController::class, 'updateStatus']);
 Route::get('/payment/return', [PaymentController::class, 'handleReturn']);
 
 
