@@ -18,7 +18,9 @@ class OrderController extends Controller
     {
         $orders = Order::with(['items.product' => function ($query) {
             $query->withTrashed(); // Lấy cả sản phẩm đã bị xóa mềm
-        }, 'items.variant', 'status']) // Include status relationship
+        }, 'items.variant', 'status', 'user' => function ($query) {
+            $query->withTrashed();
+        }]) // Include status relationship
             ->where('status_id', '!=', 6) // Chỉ lấy đơn hàng đã xác nhận
             ->get();
 
