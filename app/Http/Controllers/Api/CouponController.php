@@ -19,6 +19,11 @@ class CouponController extends Controller
     public function index()
     {
         $coupons = Coupon::all();
+        foreach ($coupons as $coupon) {
+            if ($coupon->expiration_date <= now()) {
+                $this->updateStatus($coupon->id);
+            }
+        }
         return response()->json([
             'status' => true,
             'data' => $coupons
@@ -78,6 +83,12 @@ class CouponController extends Controller
     {
         $coupon = Coupon::find($id);
         if ($coupon) {
+            if ($coupon->status == 'unactive') {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Mã khuyến mãi đã hết hạn'
+                ]);
+            }
             return response()->json([
                 'status' => true,
                 'data' => $coupon
@@ -101,6 +112,12 @@ class CouponController extends Controller
         }
         $coupon = Coupon::where('code', $request->code)->first();
         if ($coupon) {
+            if ($coupon->status == 'unactive') {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Mã khuyến mãi đã hết hạn'
+                ]);
+            }
             return response()->json([
                 'status' => true,
                 'data' => $coupon
@@ -153,7 +170,7 @@ class CouponController extends Controller
     /**
      * Update status coupon
      */
-    public function updateStatus(Request $request, $id)
+    public function updateStatus($id)
     {
         $coupon = Coupon::find($id);
         if (!$coupon) {
@@ -163,8 +180,15 @@ class CouponController extends Controller
             ]);
         }
         try {
-            DB::transaction(function () use ($request, $coupon) {
-                $coupon->update($request->all());
+            DB::transaction(function () use ($coupon) {
+                // $coupon->update($request->all());
+                if ($coupon->status == 'active') {
+                    $coupon->status = 'unactive';
+                    $coupon->save();
+                } else {
+                    $coupon->status = 'active';
+                    $coupon->save();
+                }
             });
             return response()->json([
                 'status' => true,
