@@ -37,7 +37,7 @@ class CouponController extends Controller
     {
         $validation = Validator::make($request->input(), [
             'code' => 'required|min:6|max:6|uppercase|unique:coupons,code',
-            'discount' => 'required|integer|between:1,99',
+            'discount' => 'required|integer|between:1,100',
             'expiration_date' => 'required|date'
         ]);
         if ($validation->fails()) {
@@ -135,7 +135,7 @@ class CouponController extends Controller
     {
         $validation = Validator::make($request->input(), [
             'code' => 'required|min:6|max:6|uppercase|unique:coupons,code,' . $id,
-            'discount' => 'required|integer|between:1,99',
+            'discount' => 'required|integer|between:1,100',
             'expiration_date' => 'required|date'
         ]);
         if ($validation->fails()) {
