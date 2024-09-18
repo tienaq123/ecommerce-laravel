@@ -66,7 +66,7 @@ class ProductController extends Controller
 
         if ($request->has('sort_by')) {
             $sortBy = $request->sort_by;
-            $sortOrder = $request->sort_order ?? 'asc';
+            $sortOrder = $request->sort_order ?? 'desc';
             $query->orderBy($sortBy, $sortOrder);
         }
 
