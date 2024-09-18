@@ -38,10 +38,13 @@ class DashboardController extends Controller
             return $order->items->sum('quantity');
         });
         $products = count(Product::all());
+        $maxView = Product::max('view');
+        $maxProductView = Product::select('id', 'name', 'price', 'view')->where('view', $maxView)->first();
         $value = [
             'productStock' => $productStock, // số lượng sản phẩm còn trong kho
             'countSoldProducts' => $countSoldProducts, // số lượng sản phẩm đã bán
-            'products' => $products
+            'products' => $products,
+            'maxViewProduct' => $maxProductView
         ];
         return $value;
     }
@@ -59,15 +62,18 @@ class DashboardController extends Controller
 
     protected function productByCategory()
     {
+        $countCategory = count(Category::where('parent_id', 1)->get());
         $categories = Category::select('id', 'name')->where('parent_id', 1)->get();
-
         foreach ($categories as $category) {
             $ids = $category->allChildrenIds();
             $ids[] = $category->id;
             $category->countProduct = count(Product::whereIn('category_id', $ids)->get());
             unset($category->children);
-            $category->maxProduct = max(Product::select('id', 'name', 'price')->whereIn('category_id', $ids)->get()->toArray());
+            $category->maxProduct = Product::whereIn('category_id', $ids)->get()->max('price');
         }
-        return $categories;
+        return [
+            'countCategory' => $countCategory,
+            'categories' => $categories
+        ];
     }
 }
