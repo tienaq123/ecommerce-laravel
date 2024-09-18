@@ -208,7 +208,7 @@ class CartController extends Controller
         $userId = Auth::id();
 
         // Tìm đơn hàng dựa trên orderId và userId để đảm bảo người dùng chỉ có thể xem chi tiết đơn hàng của chính mình
-        $order = Order::with(['items.product.productImages','items.variant', 'status'])
+        $order = Order::with(['items.product.productImages', 'items.variant', 'status'])
             ->where('id', $orderId)
             ->where('user_id', $userId)
             ->first();
@@ -445,6 +445,48 @@ class CartController extends Controller
         }
     }
 
+    // Check sản phẩm trong giỏ hàng
+    public function checkingCart($orderId)
+    {
+        // Lấy đơn hàng theo ID
+        $order = Order::with('orderItems.productVariant')->find($orderId);
+
+        if (!$order) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Order not found',
+            ], 404);
+        }
+
+        // Danh sách các sản phẩm không khả dụng
+        $unavailableItems = [];
+
+        // Kiểm tra từng item trong đơn hàng
+        foreach ($order->orderItems as $item) {
+            $productVariant = $item->productVariant;
+            // Kiểm tra trạng thái is_available và quantity
+            if (!$productVariant || $productVariant->is_available == false || $productVariant->stock <= 0) {
+                $unavailableItems[] = $productVariant->id; // Lưu lại các sản phẩm không khả dụng
+            }
+            // dd($productVariant->is_available, $productVariant->stock);
+        }
+
+        // Nếu có sản phẩm không khả dụng
+        if (!empty($unavailableItems)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Some items in the order are unavailable',
+                'unavailable_items' => $unavailableItems
+            ], 422);
+        }
+
+        // Nếu tất cả sản phẩm đều khả dụng
+        return response()->json([
+            'status' => true,
+            'message' => 'All items are available'
+        ], 200);
+    }
+
     public function checkout(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -488,14 +530,14 @@ class CartController extends Controller
             }
         }
 
-         // Kiểm tra và áp dụng phí ship
-         $shippingFee = 0;
-         if ($totalAmount < 1000000) {
-             $shippingFee = 20000; // Cộng 20k phí ship nếu đơn hàng dưới 1 triệu
-         }
+        // Kiểm tra và áp dụng phí ship
+        $shippingFee = 0;
+        if ($totalAmount < 1000000) {
+            $shippingFee = 20000; // Cộng 20k phí ship nếu đơn hàng dưới 1 triệu
+        }
 
-         // Cộng phí ship vào tổng giá trị đơn hàng
-         $totalAmount += $shippingFee;
+        // Cộng phí ship vào tổng giá trị đơn hàng
+        $totalAmount += $shippingFee;
 
         // Kiểm tra mã khuyến mãi
         $discountAmount = 0;
