@@ -465,10 +465,10 @@ class CartController extends Controller
         foreach ($order->orderItems as $item) {
             $productVariant = $item->productVariant;
             // Kiểm tra trạng thái is_available và quantity
-            if (!$productVariant || $productVariant->is_available == false || $productVariant->stock <= 0) {
+            if (!$productVariant || $productVariant->is_available == false || $productVariant->stock < $item->quantity) {
                 $unavailableItems[] = $productVariant->id; // Lưu lại các sản phẩm không khả dụng
             }
-            // dd($productVariant->is_available, $productVariant->stock);
+            // dd($productVariant->is_available, $productVariant->stock, $item->quantity);
         }
 
         // Nếu có sản phẩm không khả dụng

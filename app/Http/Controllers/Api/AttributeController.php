@@ -33,10 +33,20 @@ class AttributeController extends Controller
         ]);
 
         if ($request->has('values')) {
+            $existingValues = []; // Mảng để lưu trữ các giá trị đã thêm
+
             foreach ($request->values as $valueData) {
-                $attribute->values()->create([
-                    'value' => $valueData['value']
-                ]);
+                $value = $valueData['value'];
+
+                // Kiểm tra xem giá trị đã tồn tại trong mảng hoặc trong cơ sở dữ liệu chưa
+                if (!in_array($value, $existingValues) && !$attribute->values()->where('value', $value)->exists()) {
+                    $attribute->values()->create([
+                        'value' => $value
+                    ]);
+
+                    // Thêm giá trị vào mảng $existingValues để không bị tạo trùng
+                    $existingValues[] = $value;
+                }
             }
         }
 
@@ -47,13 +57,13 @@ class AttributeController extends Controller
         ], 201);
     }
 
+
     // Cập nhật thuộc tính
     public function update(Request $request, $id)
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'values' => 'nullable|array',
-            'values.*.id' => 'nullable|exists:attribute_values,id',
             'values.*.value' => 'required|string|max:255'
         ]);
 
@@ -63,21 +73,18 @@ class AttributeController extends Controller
         ]);
 
         if ($request->has('values')) {
-            foreach ($request->values as $valueData) {
-                if (isset($valueData['id'])) {
-                    // Cập nhật giá trị thuộc tính đã tồn tại
-                    $attributeValue = $attribute->values()->find($valueData['id']);
-                    if ($attributeValue) {
-                        $attributeValue->update([
-                            'value' => $valueData['value']
-                        ]);
-                    }
-                } else {
-                    // Thêm mới giá trị thuộc tính
-                    $attribute->values()->create([
-                        'value' => $valueData['value']
-                    ]);
-                }
+            // Loại bỏ các giá trị trùng lặp trong request
+            $requestValues = collect($request->values)->pluck('value')->unique()->toArray(); // Lấy danh sách các 'value' và loại bỏ trùng lặp
+            $existingValues = $attribute->values()->pluck('value')->toArray(); // Lấy danh sách các 'value' hiện có trong DB
+
+            // 1. Xóa các giá trị không có trong request
+            $valuesToDelete = array_diff($existingValues, $requestValues); // Các giá trị có trong DB nhưng không có trong request
+            $attribute->values()->whereIn('value', $valuesToDelete)->delete(); // Xóa những giá trị này
+
+            // 2. Thêm mới các giá trị có trong request mà chưa có trong DB
+            $valuesToAdd = array_diff($requestValues, $existingValues); // Các giá trị có trong request nhưng chưa có trong DB
+            foreach ($valuesToAdd as $value) {
+                $attribute->values()->create(['value' => $value]);
             }
         }
 
@@ -87,6 +94,11 @@ class AttributeController extends Controller
             'data' => $attribute->load('values')
         ], 200);
     }
+
+
+
+
+
 
     // Xóa thuộc tính
     public function destroy($id)
