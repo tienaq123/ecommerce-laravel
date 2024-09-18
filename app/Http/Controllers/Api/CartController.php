@@ -152,7 +152,9 @@ class CartController extends Controller
     {
         if (Auth::check()) {
             $userId = Auth::id();
-            $orders = Order::with(['items.product', 'items.variant', 'status']) // Include status relationship
+            $orders = Order::with(['items.product' => function ($query) {
+                $query->withTrashed(); // Lấy cả sản phẩm đã bị xóa mềm
+            }, 'items.variant', 'status']) // Include status relationship
                 ->where('user_id', $userId)
                 ->where('status_id', '!=', 6) // Lấy các đơn hàng có trạng thái khác 6
                 ->get();
@@ -176,12 +178,15 @@ class CartController extends Controller
                     'created_at' => $order->created_at,
                     'updated_at' => $order->updated_at,
                     'items' => $order->items->map(function ($item) {
+                        // Lấy thông tin sản phẩm ngay cả khi đã xóa mềm
                         return [
-                            'product_name' => $item->product->name,
+                            'product_name' => $item->product ? $item->product->name : 'Sản phẩm không tồn tại',
                             'quantity' => $item->quantity,
                             'price' => $item->price,
                             'total_price' => $item->quantity * $item->price,
-                            'image' => $item->product->productImages->first()->image_url ?? null,
+                            'image' => $item->product && $item->product->productImages->first()
+                                ? $item->product->productImages->first()->image_url
+                                : null,
                             'variant' => $item->variant ? [
                                 'sku' => $item->variant->sku,
                                 'price' => $item->variant->price,
@@ -202,11 +207,12 @@ class CartController extends Controller
         }
     }
 
+
+
     public function detail($orderId)
     {
         // Lấy user hiện tại
         $userId = Auth::id();
-
         // Tìm đơn hàng dựa trên orderId và userId để đảm bảo người dùng chỉ có thể xem chi tiết đơn hàng của chính mình
         $order = Order::with(['items.product.productImages', 'items.variant', 'status'])
             ->where('id', $orderId)
@@ -238,6 +244,7 @@ class CartController extends Controller
             'created_at' => $order->created_at,
             'updated_at' => $order->updated_at,
             'items' => $order->items->map(function ($item) {
+                $product = Product::withTrashed()->find($item->product_id); // Lấy sản phẩm đã bị xóa mềm
                 return [
                     'id' => $item->id,
                     'order_id' => $item->order_id,
@@ -246,11 +253,11 @@ class CartController extends Controller
                     'price' => $item->price,
                     'total_price' => $item->quantity * $item->price,
                     'product' => [
-                        'id' => $item->product->id,
-                        'name' => $item->product->name,
-                        'description' => $item->product->description,
-                        'price' => $item->product->price,
-                        'image' => $item->product->productImages->first()->image_url ?? null, // Ảnh sản phẩm
+                        'id' => $product->id,
+                        'name' => $product->name,
+                        'description' => $product->description,
+                        'price' => $product->price,
+                        'image' => $product->productImages->first()->image_url ?? null, // Ảnh sản phẩm
                         'variant' => $item->variant ? [
                             'sku' => $item->variant->sku,
                             'price' => $item->variant->price,
@@ -267,6 +274,7 @@ class CartController extends Controller
             'data' => $orderDetail
         ]);
     }
+
 
 
 

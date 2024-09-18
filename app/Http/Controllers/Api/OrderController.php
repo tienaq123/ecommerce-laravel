@@ -16,7 +16,9 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $orders = Order::with(['items.product.productImages', 'items.variant', 'status'])
+        $orders = Order::with(['items.product' => function ($query) {
+            $query->withTrashed(); // Lấy cả sản phẩm đã bị xóa mềm
+        }, 'items.variant', 'status']) // Include status relationship
             ->where('status_id', '!=', 6) // Chỉ lấy đơn hàng đã xác nhận
             ->get();
 
@@ -44,7 +46,7 @@ class OrderController extends Controller
                         'quantity' => $item->quantity,
                         'price' => $item->price,
                         'total_price' => $item->quantity * $item->price,
-                        'product' => [
+                        'product' => $item->product ? [
                             'id' => $item->product->id,
                             'sku' => $item->product->sku,
                             'name' => $item->product->name,
@@ -56,7 +58,7 @@ class OrderController extends Controller
                                 'price' => $item->variant->price,
                                 'thumbnail' => $item->variant->thumbnail,
                             ] : null,
-                        ],
+                        ] : 'Sản phẩm không tồn tại', // Nếu sản phẩm bị xóa hoàn toàn, không tồn tại
                     ];
                 }),
             ];
@@ -68,6 +70,8 @@ class OrderController extends Controller
             'data' => $orderDetails
         ]);
     }
+
+
 
 
     /**
