@@ -33,7 +33,7 @@ class CartController extends Controller
         }
 
         if ($request->quantity > ($variant ? $variant->stock : $product->quantity)) {
-            return response()->json(['message' => 'Insufficient product quantity'], 400);
+            return response()->json(['status' => false, 'message' => 'Insufficient product quantity'], 400);
         }
 
         if (Auth::check()) {
@@ -295,14 +295,17 @@ class CartController extends Controller
             $orderItem = OrderItem::where('id', $itemId)->where('order_id', $order->id)->first();
 
             if (!$orderItem) {
-                return response()->json(['message' => 'Item not found in cart'], 404);
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Item not found in cart'
+                ], 404);
             }
 
             $product = Product::find($orderItem->product_id);
             $variant = $orderItem->variant_id ? ProductVariant::find($orderItem->variant_id) : null;
 
             if ($request->quantity > ($variant ? $variant->stock : $product->quantity)) {
-                return response()->json(['message' => 'Insufficient product quantity'], 400);
+                return response()->json(['status' => false, 'message' => 'Insufficient product quantity'], 400);
             }
 
             $order->total_amount -= $orderItem->price * $orderItem->quantity;
@@ -322,7 +325,7 @@ class CartController extends Controller
                     $variant = $item['variant_id'] ? ProductVariant::find($item['variant_id']) : null;
 
                     if ($request->quantity > ($variant ? $variant->stock : $product->quantity)) {
-                        return response()->json(['message' => 'Insufficient product quantity'], 400);
+                        return response()->json(['status' => false, 'message' => 'Insufficient product quantity'], 400);
                     }
 
                     $item['quantity'] = $request->quantity;
