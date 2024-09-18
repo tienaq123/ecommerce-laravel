@@ -21,6 +21,9 @@ class DashboardController extends Controller
                     'totalRevenue' => Order::where('status_id', 4)->get()->sum('total_amount'),
                     'completedOrders' => count(Order::where('status_id', '=', 4)->get()),
                     'canceledOrders' => count(Order::where('status_id', '=', 5)->get()),
+                    'pendingOrders' => count(Order::where('status_id', 1)->get()),
+                    'confirmedOrders' => count(Order::where('status_id', 2)->get()),
+                    'shippedOrders' => count(Order::where('status_id', 3)->get()),
                     'countOrders' => count(Order::all())
                 ],
                 'user' => $this->userStatistics(),
