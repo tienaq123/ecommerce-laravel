@@ -73,8 +73,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/orders/{orderId}/cancel', [CartController::class, 'cancelOrder']);
     Route::get('/orders/{orderId}/detail', [CartController::class, 'detail']);
 });
+Route::apiResource('order', OrderController::class);
 Route::get('/payment/return', [PaymentController::class, 'handleReturn']);
-
 
 
 // banners
