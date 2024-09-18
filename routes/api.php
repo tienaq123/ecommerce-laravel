@@ -66,13 +66,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/cart/checkout', [CartController::class, 'checkout']); // Checkout
 
     // order
-    Route::apiResource('order', OrderController::class);
-
     Route::get('/list-order', [CartController::class, 'viewOrder']);
     Route::post('/orders/{orderId}/cancel', [CartController::class, 'cancelOrder']);
-    Route::apiResource('order', OrderController::class);
-    Route::get('/orders/{orderId}/detail', [CartController::class, 'detail']);
+    // Route::get('/orders/{orderId}/detail', [CartController::class, 'detail']);
 });
+
+Route::apiResource('order', OrderController::class);
 Route::PUT('/update-status/{id}', [OrderController::class, 'updateStatus']);
 Route::get('/payment/return', [PaymentController::class, 'handleReturn']);
 

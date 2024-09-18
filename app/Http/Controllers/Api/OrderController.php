@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -95,7 +96,64 @@ class OrderController extends Controller
      */
     public function show(string $id)
     {
-        //
+         $order = Order::with(['items.product.productImages', 'items.variant', 'status'])
+             ->where('id', $id)
+             ->first();
+
+         // Kiểm tra xem đơn hàng có tồn tại không
+         if (!$order) {
+             return response()->json([
+                 'status' => false,
+                 'message' => 'Order not found or you do not have permission to view this order.'
+             ], 404);
+         }
+
+         // Lấy chi tiết đơn hàng
+         $orderDetail = [
+             'id' => $order->id,
+             'user_id' => $order->user_id,
+             'user_name' => $order->user->name,
+             'phone_number' => $order->user->phone_number,
+             'total_amount' => $order->total_amount,
+             'payment' => $order->payment,
+             'address_detail' => $order->address_detail,
+             'ward' => $order->ward,
+             'district' => $order->district,
+             'city' => $order->city,
+             'status_id' => $order->status_id,
+             'status' => $order->status->name,
+             'created_at' => $order->created_at,
+             'updated_at' => $order->updated_at,
+             'items' => $order->items->map(function ($item) {
+                 $product = Product::withTrashed()->find($item->product_id); // Lấy sản phẩm đã bị xóa mềm
+                 return [
+                     'id' => $item->id,
+                     'order_id' => $item->order_id,
+                     'product_id' => $item->product_id,
+                     'quantity' => $item->quantity,
+                     'price' => $item->price,
+                     'total_price' => $item->quantity * $item->price,
+                     'product' => [
+                         'id' => $product->id,
+                         'name' => $product->name,
+                         'description' => $product->description,
+                         'price' => $product->price,
+                         'image' => $product->productImages->first()->image_url ?? null, // Ảnh sản phẩm
+                         'variant' => $item->variant ? [
+                             'sku' => $item->variant->sku,
+                             'price' => $item->variant->price,
+                             'thumbnail' => $item->variant->thumbnail,
+                         ] : null,
+                     ],
+                 ];
+             }),
+         ];
+
+         return response()->json([
+             'status' => true,
+             'message' => 'Success',
+             'data' => $orderDetail
+         ]);
     }
 
     /**
