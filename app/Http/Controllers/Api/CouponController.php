@@ -20,7 +20,7 @@ class CouponController extends Controller
     {
         $coupons = Coupon::all();
         foreach ($coupons as $coupon) {
-            if ($coupon->expiration_date <= now()) {
+            if ($coupon->expiration_date <= now() && $coupon->status == 'active') {
                 $this->updateStatus($coupon->id);
             }
         }
