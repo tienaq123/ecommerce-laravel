@@ -446,10 +446,16 @@ class CartController extends Controller
     }
 
     // Check sản phẩm trong giỏ hàng
-    public function checkingCart($orderId)
+    public function checkingCart()
     {
-        // Lấy đơn hàng theo ID
-        $order = Order::with('orderItems.productVariant')->find($orderId);
+        // Lấy ID của user hiện tại (giả sử user đã đăng nhập)
+        $userId = auth()->id();
+
+        // Lấy đơn hàng của người dùng đang ở trạng thái 'pending' hoặc 'processing'
+        $order = Order::with('orderItems.productVariant.product') // Thêm mối quan hệ với bảng product
+            ->where('user_id', $userId)
+            ->where('status_id', 6) // chỉ lấy đơn hàng trong giỏ (status_id = 6)
+            ->first();
 
         if (!$order) {
             return response()->json([
@@ -464,11 +470,16 @@ class CartController extends Controller
         // Kiểm tra từng item trong đơn hàng
         foreach ($order->orderItems as $item) {
             $productVariant = $item->productVariant;
+
             // Kiểm tra trạng thái is_available và quantity
             if (!$productVariant || $productVariant->is_available == false || $productVariant->stock < $item->quantity) {
-                $unavailableItems[] = $productVariant->id; // Lưu lại các sản phẩm không khả dụng
+                $unavailableItems[] = [
+                    'product_name' => $productVariant->product->name, // Lấy tên sản phẩm từ bảng product
+                    'sku' => $productVariant->sku, // SKU của biến thể
+                    'stock' => $productVariant->stock, // Số lượng tồn kho
+                    'ordered_quantity' => $item->quantity // Số lượng mà khách hàng đã đặt
+                ];
             }
-            // dd($productVariant->is_available, $productVariant->stock, $item->quantity);
         }
 
         // Nếu có sản phẩm không khả dụng
@@ -486,6 +497,8 @@ class CartController extends Controller
             'message' => 'All items are available'
         ], 200);
     }
+
+
 
     public function checkout(Request $request)
     {
