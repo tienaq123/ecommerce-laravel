@@ -74,15 +74,15 @@ class AttributeController extends Controller
 
         if ($request->has('values')) {
             // Loại bỏ các giá trị trùng lặp trong request
-            $requestValues = collect($request->values)->pluck('value')->unique()->toArray(); // Lấy danh sách các 'value' và loại bỏ trùng lặp
-            $existingValues = $attribute->values()->pluck('value')->toArray(); // Lấy danh sách các 'value' hiện có trong DB
+            $requestValues = collect($request->values)->pluck('value')->unique()->toArray();
+            $existingValues = $attribute->values()->pluck('value')->toArray();
 
             // 1. Xóa các giá trị không có trong request
-            $valuesToDelete = array_diff($existingValues, $requestValues); // Các giá trị có trong DB nhưng không có trong request
-            $attribute->values()->whereIn('value', $valuesToDelete)->delete(); // Xóa những giá trị này
+            $valuesToDelete = array_diff($existingValues, $requestValues);
+            $attribute->values()->whereIn('value', $valuesToDelete)->delete();
 
             // 2. Thêm mới các giá trị có trong request mà chưa có trong DB
-            $valuesToAdd = array_diff($requestValues, $existingValues); // Các giá trị có trong request nhưng chưa có trong DB
+            $valuesToAdd = array_diff($requestValues, $existingValues); 
             foreach ($valuesToAdd as $value) {
                 $attribute->values()->create(['value' => $value]);
             }
